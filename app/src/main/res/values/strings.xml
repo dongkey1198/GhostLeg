@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">GhostLeg</string>
+    <string name="label_button_start">시작하기</string>
 </resources>
