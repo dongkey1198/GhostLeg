@@ -7,9 +7,10 @@ import android.util.AttributeSet
 import android.view.View
 import com.example.ghostleg.model.Line
 
-class LadderView(context: Context, attr: AttributeSet?): View(context, attr) {
+class LadderView(context: Context, attr: AttributeSet?) : View(context, attr) {
 
     private val _verticalLines: MutableList<Line> = mutableListOf()
+    private val _horizontalLines: MutableList<Line> = mutableListOf()
     private val paint = Paint()
 
     fun updateVerticalLines(lines: List<Line>) {
@@ -20,21 +21,39 @@ class LadderView(context: Context, attr: AttributeSet?): View(context, attr) {
         invalidate()
     }
 
+    fun updateHorizontalLines(lines: List<Line>) {
+        _horizontalLines.apply {
+            clear()
+            addAll(lines)
+        }
+        invalidate()
+    }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?.let {
             drawVerticalLines(it)
+            drawHorizontalLines(it)
         }
     }
 
     private fun drawVerticalLines(canvas: Canvas) {
-        _verticalLines.forEach { ladder ->
+        _verticalLines.forEach { line ->
             paint.apply {
-                color = ladder.color
-                strokeWidth = ladder.stroke
+                color = line.color
+                strokeWidth = line.stroke
             }
-            canvas.drawLine(ladder.startX, ladder.startY, ladder.endX, ladder.endY, paint)
+            canvas.drawLine(line.startX, line.startY, line.endX, line.endY, paint)
+        }
+    }
+
+    private fun drawHorizontalLines(canvas: Canvas) {
+        _horizontalLines.forEach { line ->
+            paint.apply {
+                color = line.color
+                strokeWidth = line.stroke
+            }
+            canvas.drawLine(line.startX, line.startY, line.endX, line.endY, paint)
         }
     }
 }

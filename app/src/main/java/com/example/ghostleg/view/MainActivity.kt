@@ -20,13 +20,29 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initLadderView()
+        initStartButton()
         observeLadderView()
     }
 
     private fun initLadderView() {
         lifecycleScope.launch(Dispatchers.Main) {
-            viewModel.verticalLinesFlow.collect {
-                binding.ladderView.updateVerticalLines(it)
+            launch {
+                viewModel.verticalLinesFlow.collect {
+                    binding.ladderView.updateVerticalLines(it)
+                }
+            }
+            launch {
+                viewModel.horizontalLinesFlow.collect {
+                    binding.ladderView.updateHorizontalLines(it)
+                }
+            }
+        }
+    }
+
+    private fun initStartButton() {
+        with(binding.buttonStart) {
+            setOnClickListener {
+                viewModel.generateHorizontalLines()
             }
         }
     }
@@ -36,7 +52,6 @@ class MainActivity : AppCompatActivity() {
             viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     viewModel.generateVerticalLines(
-                        playerNumber = 6,
                         width = width.toFloat(),
                         height = height.toFloat()
                     )
