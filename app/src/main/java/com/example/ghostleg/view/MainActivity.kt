@@ -4,6 +4,7 @@ import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Gravity
+import android.view.ViewTreeObserver
 import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import androidx.activity.viewModels
@@ -31,15 +32,18 @@ class MainActivity : AppCompatActivity() {
     private fun initGame() {
         viewModel.initGame()
         binding.ladderView.apply {
-            viewTreeObserver.addOnGlobalLayoutListener {
-                viewModel.initLadder(width.toFloat(), height.toFloat())
-            }
+            viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    viewModel.initLadder(width.toFloat(), height.toFloat())
+                    viewTreeObserver.removeOnGlobalLayoutListener(this)
+                }
+            })
         }
     }
 
     private fun initStartButton() {
         binding.buttonStart.setOnClickListener {
-            // TODO: 게임 시작
+            viewModel.startGame()
         }
     }
 
@@ -60,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                             textSize = 16f
                             gravity = Gravity.CENTER
                             typeface = Typeface.DEFAULT_BOLD
-                            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f)
+                            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1.0f)
                         }.let {
                             binding.layoutPlayerLabel.addView(it)
                         }
@@ -77,7 +81,7 @@ class MainActivity : AppCompatActivity() {
                             textSize = 16f
                             gravity = Gravity.CENTER
                             typeface = Typeface.DEFAULT_BOLD
-                            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f)
+                            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1.0f)
                         }.let {
                             binding.layoutGameResult.addView(it)
                         }
@@ -91,6 +95,12 @@ class MainActivity : AppCompatActivity() {
             // Horizontal Lines
             launch {
                 viewModel.horizontalLinesFlow.collect { binding.ladderView.updateHorizontalLines(it) }
+            }
+            // Ladder Routes
+            launch {
+                viewModel.ladderRoutesFlow.collect { ladderRoutes ->
+                    // TODO: 루트 그리기
+                }
             }
         }
     }
