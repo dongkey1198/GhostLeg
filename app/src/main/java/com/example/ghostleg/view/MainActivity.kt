@@ -1,8 +1,11 @@
 package com.example.ghostleg.view
 
+import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.ViewTreeObserver
+import android.view.Gravity
+import android.widget.LinearLayout.LayoutParams
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.ghostleg.databinding.ActivityMainBinding
@@ -19,45 +22,76 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        initLadderView()
+        initGame()
         initStartButton()
-        observeLadderView()
+        initResetButton()
+        setObservers()
     }
 
-    private fun initLadderView() {
-        lifecycleScope.launch(Dispatchers.Main) {
-            launch {
-                viewModel.verticalLinesFlow.collect {
-                    binding.ladderView.updateVerticalLines(it)
-                }
-            }
-            launch {
-                viewModel.horizontalLinesFlow.collect {
-                    binding.ladderView.updateHorizontalLines(it)
-                }
+    private fun initGame() {
+        viewModel.initGame()
+        binding.ladderView.apply {
+            viewTreeObserver.addOnGlobalLayoutListener {
+                viewModel.initLadder(width.toFloat(), height.toFloat())
             }
         }
     }
 
     private fun initStartButton() {
-        with(binding.buttonStart) {
-            setOnClickListener {
-                viewModel.generateHorizontalLines()
-            }
+        binding.buttonStart.setOnClickListener {
+            // TODO: 게임 시작
         }
     }
 
-    private fun observeLadderView() {
-        with(binding.ladderView) {
-            viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    viewModel.generateVerticalLines(
-                        width = width.toFloat(),
-                        height = height.toFloat()
-                    )
-                    viewTreeObserver.removeOnGlobalLayoutListener(this)
+    private fun initResetButton() {
+        binding.buttonReset.setOnClickListener {
+            viewModel.resetGame()
+        }
+    }
+
+    private fun setObservers() {
+        lifecycleScope.launch(Dispatchers.Main) {
+            // Player Labels
+            launch {
+                viewModel.playerLabelsFlow.collect { playerLabels ->
+                    playerLabels.forEach { playerLabel ->
+                        TextView(this@MainActivity).apply {
+                            text = playerLabel
+                            textSize = 16f
+                            gravity = Gravity.CENTER
+                            typeface = Typeface.DEFAULT_BOLD
+                            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f)
+                        }.let {
+                            binding.layoutPlayerLabel.addView(it)
+                        }
+                    }
                 }
-            })
+            }
+            // Result Labels
+            launch {
+                viewModel.gameResultLabelsFlow.collect { gameResults ->
+                    binding.layoutGameResult.removeAllViews()
+                    gameResults.forEach { gameResult ->
+                        TextView(this@MainActivity).apply {
+                            text = gameResult
+                            textSize = 16f
+                            gravity = Gravity.CENTER
+                            typeface = Typeface.DEFAULT_BOLD
+                            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f)
+                        }.let {
+                            binding.layoutGameResult.addView(it)
+                        }
+                    }
+                }
+            }
+            // Vertical Lines
+            launch {
+                viewModel.verticalLinesFlow.collect { binding.ladderView.updateVerticalLines(it) }
+            }
+            // Horizontal Lines
+            launch {
+                viewModel.horizontalLinesFlow.collect { binding.ladderView.updateHorizontalLines(it) }
+            }
         }
     }
 }

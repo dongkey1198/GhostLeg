@@ -8,19 +8,61 @@ import kotlinx.coroutines.flow.update
 
 class MainViewModel : ViewModel() {
 
+    private val _playerLabelsFlow = MutableStateFlow<List<String>>(emptyList())
+    val playerLabelsFlow get() = _playerLabelsFlow.asStateFlow()
+
+    private val _gameResultLabelsFlow = MutableStateFlow<List<String>>(emptyList())
+    val gameResultLabelsFlow get() = _gameResultLabelsFlow.asStateFlow()
+
     private val _verticalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val verticalLinesFlow get() = _verticalLinesFlow.asStateFlow()
 
     private val _horizontalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val horizontalLinesFlow get() = _horizontalLinesFlow.asStateFlow()
 
-    private var playerNumber = 6
+    private var _playerNumbers = 10
 
-    fun generateVerticalLines(width: Float, height: Float) {
-        val sectionWidth = width / playerNumber
+    fun initGame() {
+        initGamePlayers()
+        initGameResult()
+    }
+
+    fun initLadder(width: Float, height: Float) {
+        initVerticalLines(width, height)
+        initHorizontalLines()
+    }
+
+    fun resetGame() {
+        initGameResult()
+        initHorizontalLines()
+    }
+
+    private fun initGamePlayers() {
+        (1 .. _playerNumbers).map { playerNumber ->
+            "P$playerNumber"
+        }.let { playerLabels ->
+            _playerLabelsFlow.update { playerLabels }
+        }
+    }
+
+    private fun initGameResult() {
+        val resultIndex = (0 until _playerNumbers).random()
+        (0 until _playerNumbers).map { index ->
+            if (index == resultIndex) {
+                "WIN"
+            } else {
+                "LOSE"
+            }
+        }.let { gameResults ->
+            _gameResultLabelsFlow.update { gameResults }
+        }
+    }
+
+    private fun initVerticalLines(width: Float, height: Float) {
+        val sectionWidth = width / _playerNumbers
         var sectionStart = 0f
         var sectionEnd = sectionWidth
-        (0 until playerNumber).map {
+        (0 until _playerNumbers).map {
             val xScale = (sectionEnd + sectionStart) / 2
             sectionStart += sectionWidth
             sectionEnd += sectionWidth
@@ -30,13 +72,13 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun generateHorizontalLines() {
+     private fun initHorizontalLines() {
         if (_verticalLinesFlow.value.isEmpty()) return
         val horizontalLinesMatrix = getHorizontalLineMatrix()
         (0 until _verticalLinesFlow.value.size - 1).map { index ->
             val currentLine = _verticalLinesFlow.value[index]
             val nextLine = _verticalLinesFlow.value[index + 1]
-            generateHorizontalLines(
+            initHorizontalLines(
                 currentLine.startX,
                 nextLine.startX,
                 currentLine.startY,
@@ -48,7 +90,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun generateHorizontalLines(
+    private fun initHorizontalLines(
         startX: Float,
         endX: Float,
         minY: Float,
@@ -71,8 +113,8 @@ class MainViewModel : ViewModel() {
     }
 
     private fun getHorizontalLineMatrix(): Array<BooleanArray> {
-        val horizontalLineMatrix = Array(playerNumber) { BooleanArray(HORIZONTAL_LINE_SECTIONS) }
-        (0 until playerNumber).forEach { index ->
+        val horizontalLineMatrix = Array(_playerNumbers) { BooleanArray(HORIZONTAL_LINE_SECTIONS) }
+        (0 until _playerNumbers).forEach { index ->
             val availableIndices = (0 until HORIZONTAL_LINE_SECTIONS).toMutableList()
             if (index > 0) {
                 horizontalLineMatrix[index - 1].forEachIndexed { j, value ->
@@ -80,7 +122,7 @@ class MainViewModel : ViewModel() {
                 }
             }
             val remainingTrueCount = when {
-                availableIndices.size > playerNumber -> (MINIMUM_COUNT..playerNumber).random()
+                availableIndices.size >= MAXIMUM_COUNT -> (MINIMUM_COUNT .. MAXIMUM_COUNT).random()
                 else -> (MINIMUM_COUNT..availableIndices.size).random()
             }
             availableIndices.shuffled()
@@ -95,5 +137,6 @@ class MainViewModel : ViewModel() {
     companion object {
         private const val HORIZONTAL_LINE_SECTIONS = 10
         private const val MINIMUM_COUNT = 2
+        private const val MAXIMUM_COUNT = 8
     }
 }
