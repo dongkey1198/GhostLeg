@@ -20,7 +20,8 @@ class MainViewModel : ViewModel() {
     private val _horizontalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val horizontalLinesFlow get() = _horizontalLinesFlow.asStateFlow()
 
-    private var _playerNumbers = 10
+    private val _ladderMatrix = mutableListOf<List<Pair<Float, Float>>>()
+    private var _playerNumbers = 2
 
     fun initGame() {
         initGamePlayers()
@@ -28,11 +29,13 @@ class MainViewModel : ViewModel() {
     }
 
     fun initLadder(width: Float, height: Float) {
+        initMatrix(width, height)
         initVerticalLines(width, height)
         initHorizontalLines()
     }
 
     fun resetGame() {
+        initGamePlayers()
         initGameResult()
         initHorizontalLines()
     }
@@ -55,6 +58,29 @@ class MainViewModel : ViewModel() {
             }
         }.let { gameResults ->
             _gameResultLabelsFlow.update { gameResults }
+        }
+    }
+
+    private fun initMatrix(width: Float, height: Float) {
+        val lastPosition = HORIZONTAL_LINE_SECTIONS + 2
+        val sectionWidth = width / _playerNumbers
+        val sectionHeight = height / HORIZONTAL_LINE_SECTIONS
+        (0 until lastPosition).map { y ->
+            (0 until _playerNumbers).map { x ->
+                val xScale =  (sectionWidth * (x + 1) + sectionWidth * x) / 2
+                val yScale = when {
+                    // 출발 지점
+                    y == 0 -> 0f
+                    // 중간 지점
+                    y < lastPosition -> (sectionHeight * y + sectionHeight * (y - 1)) / 2
+                    // 도착 지점
+                    else -> height
+                }
+                Pair(xScale, yScale)
+            }
+        }.let { ladderMatrix ->
+            _ladderMatrix.clear()
+            _ladderMatrix.addAll(ladderMatrix)
         }
     }
 
