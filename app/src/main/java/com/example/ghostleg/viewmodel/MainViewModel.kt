@@ -8,19 +8,35 @@ import kotlinx.coroutines.flow.update
 
 class MainViewModel : ViewModel() {
 
+    private val _playerLabelsFlow = MutableStateFlow<List<String>>(emptyList())
+    val playerLabelsFlow get() = _playerLabelsFlow.asStateFlow()
+
     private val _verticalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val verticalLinesFlow get() = _verticalLinesFlow.asStateFlow()
 
     private val _horizontalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val horizontalLinesFlow get() = _horizontalLinesFlow.asStateFlow()
 
-    private var playerNumber = 6
+    private var playerNumbers = 6
 
-    fun generateVerticalLines(width: Float, height: Float) {
-        val sectionWidth = width / playerNumber
+    fun initGame(width: Float, height: Float) {
+        initGamePlayers()
+        generateVerticalLines(width, height)
+    }
+
+    private fun initGamePlayers() {
+        (1 .. playerNumbers).map { playerNumber ->
+            "P$playerNumber"
+        }.let { playerLabels ->
+            _playerLabelsFlow.update { playerLabels }
+        }
+    }
+
+    private fun generateVerticalLines(width: Float, height: Float) {
+        val sectionWidth = width / playerNumbers
         var sectionStart = 0f
         var sectionEnd = sectionWidth
-        (0 until playerNumber).map {
+        (0 until playerNumbers).map {
             val xScale = (sectionEnd + sectionStart) / 2
             sectionStart += sectionWidth
             sectionEnd += sectionWidth
@@ -71,8 +87,8 @@ class MainViewModel : ViewModel() {
     }
 
     private fun getHorizontalLineMatrix(): Array<BooleanArray> {
-        val horizontalLineMatrix = Array(playerNumber) { BooleanArray(HORIZONTAL_LINE_SECTIONS) }
-        (0 until playerNumber).forEach { index ->
+        val horizontalLineMatrix = Array(playerNumbers) { BooleanArray(HORIZONTAL_LINE_SECTIONS) }
+        (0 until playerNumbers).forEach { index ->
             val availableIndices = (0 until HORIZONTAL_LINE_SECTIONS).toMutableList()
             if (index > 0) {
                 horizontalLineMatrix[index - 1].forEachIndexed { j, value ->
@@ -80,7 +96,7 @@ class MainViewModel : ViewModel() {
                 }
             }
             val remainingTrueCount = when {
-                availableIndices.size > playerNumber -> (MINIMUM_COUNT..playerNumber).random()
+                availableIndices.size > playerNumbers -> (MINIMUM_COUNT..playerNumbers).random()
                 else -> (MINIMUM_COUNT..availableIndices.size).random()
             }
             availableIndices.shuffled()
