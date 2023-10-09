@@ -21,7 +21,7 @@
     <LinearLayout
         android:id="@+id/layoutPlayerLabel"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,7 +39,7 @@
     <LinearLayout
         android:id="@+id/layoutGameResult"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@id/layoutSetting"
         app:layout_constraintEnd_toEndOf="parent"

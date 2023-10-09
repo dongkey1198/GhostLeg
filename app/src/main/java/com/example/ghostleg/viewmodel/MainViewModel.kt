@@ -32,13 +32,13 @@ class MainViewModel : ViewModel() {
     fun initLadder(width: Float, height: Float) {
         initLadderMatrix(width, height)
         initRandomLineMatrix()
-        initVerticalLines(width, height)
+        initVerticalLines()
         initHorizontalLines()
     }
 
     fun resetGame() {
-        initGamePlayers()
         initGameResult()
+        initRandomLineMatrix()
         initHorizontalLines()
     }
 
@@ -95,9 +95,7 @@ class MainViewModel : ViewModel() {
                 horizontalLineMatrix[y][x + 1] = 2
             }
         }
-        horizontalLineMatrix.map { matrix ->
-            matrix.toList()
-        }.let { randomLineMatrix ->
+        horizontalLineMatrix.map { it.toList() }.let { randomLineMatrix ->
             _randomLineMatrix.clear()
             _randomLineMatrix.addAll(randomLineMatrix)
         }
@@ -107,7 +105,7 @@ class MainViewModel : ViewModel() {
         val randomIndices = mutableListOf<List<Int>>()
         (0 until _playerNumbers - 1).forEach { index ->
             val availableIndices = (1 .. HORIZONTAL_LINE_SECTIONS).toMutableList()
-            if (index > 1) {
+            if (index > 0) {
                 randomIndices[index - 1].forEach { value ->
                     if (availableIndices.contains(value)) availableIndices.remove(value)
                 }
@@ -122,80 +120,29 @@ class MainViewModel : ViewModel() {
         return randomIndices
     }
 
-    private fun initVerticalLines(width: Float, height: Float) {
-        val sectionWidth = width / _playerNumbers
-        var sectionStart = 0f
-        var sectionEnd = sectionWidth
-        (0 until _playerNumbers).map {
-            val xScale = (sectionEnd + sectionStart) / 2
-            sectionStart += sectionWidth
-            sectionEnd += sectionWidth
-            Line(startX = xScale, startY = 0f, endX = xScale, endY = height)
+    private fun initVerticalLines() {
+        (0 until _playerNumbers).map { index ->
+            val startMatrix = _ladderMatrix.first()
+            val endMatrix = _ladderMatrix.last()
+            Line(startMatrix[index].first, startMatrix[index].second, endMatrix[index].first, endMatrix[index].second)
         }.let { verticalLines ->
             _verticalLinesFlow.update { verticalLines }
         }
     }
 
-     private fun initHorizontalLines() {
-        if (_verticalLinesFlow.value.isEmpty()) return
-        val horizontalLinesMatrix = getHorizontalLineMatrix()
-        (0 until _verticalLinesFlow.value.size - 1).map { index ->
-            val currentLine = _verticalLinesFlow.value[index]
-            val nextLine = _verticalLinesFlow.value[index + 1]
-            initHorizontalLines(
-                currentLine.startX,
-                nextLine.startX,
-                currentLine.startY,
-                currentLine.endY,
-                horizontalLinesMatrix[index]
-            )
-        }.flatten().let { horizontalLines ->
-            _horizontalLinesFlow.update { horizontalLines }
-        }
-    }
-
-    private fun initHorizontalLines(
-        startX: Float,
-        endX: Float,
-        minY: Float,
-        maxY: Float,
-        horizontalLinesMatrix: BooleanArray
-    ): List<Line> {
-        val lines = mutableListOf<Line>()
-        val sectionWidth = maxY / HORIZONTAL_LINE_SECTIONS
-        horizontalLinesMatrix.forEachIndexed { index, value ->
-            if (value) {
-                val yScale = when (index) {
-                    0 -> (sectionWidth + minY) / 2
-                    else -> (sectionWidth * (index + 1) + (sectionWidth * index)) / 2
-                }
-                val line = Line(startX = startX, startY = yScale, endX = endX, endY = yScale)
-                lines.add(line)
-            }
-        }
-        return lines
-    }
-
-    private fun getHorizontalLineMatrix(): Array<BooleanArray> {
-        val horizontalLineMatrix = Array(_playerNumbers) { BooleanArray(HORIZONTAL_LINE_SECTIONS) }
-        (0 until _playerNumbers).forEach { index ->
-            val availableIndices = (0 until HORIZONTAL_LINE_SECTIONS).toMutableList()
-            if (index > 0) {
-                horizontalLineMatrix[index - 1].forEachIndexed { j, value ->
-                    if (value) availableIndices.remove(j)
+    private fun initHorizontalLines() {
+        val horizontalLines = mutableListOf<Line>()
+        (1 until _randomLineMatrix.size - 1).forEach { y ->
+            (0 until _randomLineMatrix[y].size - 1).forEach { x ->
+                if (_randomLineMatrix[y][x] == 1) {
+                    val startMatrix = _ladderMatrix[y][x]
+                    val endMatrix = _ladderMatrix[y][x + 1]
+                    val line = Line(startMatrix.first, startMatrix.second, endMatrix.first, endMatrix.second)
+                    horizontalLines.add(line)
                 }
             }
-            val remainingTrueCount = when {
-                availableIndices.size >= MAXIMUM_COUNT -> (MINIMUM_COUNT .. MAXIMUM_COUNT).random()
-                else -> (MINIMUM_COUNT..availableIndices.size).random()
-            }
-            availableIndices.shuffled()
-                .take(remainingTrueCount)
-                .forEach { randomIndex ->
-                    horizontalLineMatrix[index][randomIndex] = true
-                }
         }
-        return horizontalLineMatrix
+        _horizontalLinesFlow.update { horizontalLines }
     }
 
     companion object {
