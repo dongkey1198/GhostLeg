@@ -2,6 +2,7 @@ package com.example.ghostleg.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.ghostleg.model.Line
+import com.example.ghostleg.model.Route
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -19,6 +20,9 @@ class MainViewModel : ViewModel() {
 
     private val _horizontalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val horizontalLinesFlow get() = _horizontalLinesFlow.asStateFlow()
+
+    private val _ladderRoutesFlow = MutableStateFlow<List<List<Route>>>(emptyList())
+    val ladderRoutesFlow get() = _ladderRoutesFlow.asStateFlow()
 
     private val _ladderMatrix = mutableListOf<List<Pair<Float, Float>>>()
     private val _randomLineMatrix = mutableListOf<List<Int>>()
@@ -40,6 +44,10 @@ class MainViewModel : ViewModel() {
         initGameResult()
         initRandomLineMatrix()
         initHorizontalLines()
+    }
+
+    fun startGame() {
+        findRoutes()
     }
 
     private fun initGamePlayers() {
@@ -143,6 +151,41 @@ class MainViewModel : ViewModel() {
             }
         }
         _horizontalLinesFlow.update { horizontalLines }
+    }
+
+    private fun findRoutes() {
+        val ladderRoutes = mutableListOf<List<Route>>()
+        (0 until _playerNumbers).forEach { index ->
+            var y = 0
+            var x = index
+            val routes = mutableListOf<Route>()
+            do {
+                when(_randomLineMatrix[y][x]) {
+                    // 오른쪽 이동 + 한칸 아래 이동
+                    1 -> {
+                        routes.add(getRoute(y, x, y, ++x))
+                        routes.add(getRoute(y, x, ++y, x))
+                    }
+                    // 왼쪽 이동 + 한칸 아래 이동
+                    2-> {
+                        routes.add(getRoute(y, x, y, --x))
+                        routes.add(getRoute(y, x, ++y, x))
+                    }
+                    // 한칸 아래 이동
+                    else -> {
+                        routes.add(getRoute(y, x, ++y, x))
+                    }
+                }
+            } while (y < HORIZONTAL_LINE_SECTIONS + 1)
+            ladderRoutes.add(routes)
+        }
+        _ladderRoutesFlow.update { ladderRoutes }
+    }
+
+    private fun getRoute(i: Int, j: Int, k: Int, l: Int): Route {
+        val startScale = _ladderMatrix[i][j]
+        val endScale = _ladderMatrix[k][l]
+        return Route(startScale, endScale)
     }
 
     companion object {

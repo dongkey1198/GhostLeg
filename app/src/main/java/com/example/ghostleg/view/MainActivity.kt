@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initStartButton() {
         binding.buttonStart.setOnClickListener {
-            // TODO: 게임 시작
+            viewModel.startGame()
         }
     }
 
@@ -95,6 +95,12 @@ class MainActivity : AppCompatActivity() {
             // Horizontal Lines
             launch {
                 viewModel.horizontalLinesFlow.collect { binding.ladderView.updateHorizontalLines(it) }
+            }
+            // Ladder Routes
+            launch {
+                viewModel.ladderRoutesFlow.collect { ladderRoutes ->
+                    // TODO: 루트 그리기
+                }
             }
         }
     }
