@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initResetButton() {
         binding.buttonReset.setOnClickListener {
-            viewModel.initHorizontalLines()
+            viewModel.resetGame()
         }
     }
 
@@ -70,6 +70,7 @@ class MainActivity : AppCompatActivity() {
             // Result Labels
             launch {
                 viewModel.gameResultLabelsFlow.collect { gameResults ->
+                    binding.layoutGameResult.removeAllViews()
                     gameResults.forEach { gameResult ->
                         TextView(this@MainActivity).apply {
                             text = gameResult

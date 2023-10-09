@@ -20,7 +20,7 @@ class MainViewModel : ViewModel() {
     private val _horizontalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val horizontalLinesFlow get() = _horizontalLinesFlow.asStateFlow()
 
-    private var _playerNumbers = 2
+    private var _playerNumbers = 10
 
     fun initGame() {
         initGamePlayers()
@@ -29,6 +29,11 @@ class MainViewModel : ViewModel() {
 
     fun initLadder(width: Float, height: Float) {
         initVerticalLines(width, height)
+        initHorizontalLines()
+    }
+
+    fun resetGame() {
+        initGameResult()
         initHorizontalLines()
     }
 
@@ -67,7 +72,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-     fun initHorizontalLines() {
+     private fun initHorizontalLines() {
         if (_verticalLinesFlow.value.isEmpty()) return
         val horizontalLinesMatrix = getHorizontalLineMatrix()
         (0 until _verticalLinesFlow.value.size - 1).map { index ->
