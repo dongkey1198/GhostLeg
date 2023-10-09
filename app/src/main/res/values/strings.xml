@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">GhostLeg</string>
+    <string name="label_game_title">사타리 타기</string>
     <string name="label_button_start">시작하기</string>
 </resources>
