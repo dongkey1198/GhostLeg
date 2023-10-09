@@ -20,30 +20,29 @@ class MainViewModel : ViewModel() {
     private val _horizontalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val horizontalLinesFlow get() = _horizontalLinesFlow.asStateFlow()
 
-    private var playerNumbers = 6
+    private var _playerNumbers = 2
 
-    fun initGame(width: Float, height: Float) {
+    fun initGame() {
         initGamePlayers()
         initGameResult()
-        generateVerticalLines(width, height)
+    }
+
+    fun initLadder(width: Float, height: Float) {
+        initVerticalLines(width, height)
+        initHorizontalLines()
     }
 
     private fun initGamePlayers() {
-        (1 .. playerNumbers).map { playerNumber ->
-            if (playerNumber == 1) {
-                "P${playerNumber + 10}"
-            } else {
-                "P$playerNumber"
-            }
-
+        (1 .. _playerNumbers).map { playerNumber ->
+            "P$playerNumber"
         }.let { playerLabels ->
             _playerLabelsFlow.update { playerLabels }
         }
     }
 
     private fun initGameResult() {
-        val resultIndex = (0 until playerNumbers).random()
-        (0 until playerNumbers).map { index ->
+        val resultIndex = (0 until _playerNumbers).random()
+        (0 until _playerNumbers).map { index ->
             if (index == resultIndex) {
                 "WIN"
             } else {
@@ -54,11 +53,11 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun generateVerticalLines(width: Float, height: Float) {
-        val sectionWidth = width / playerNumbers
+    private fun initVerticalLines(width: Float, height: Float) {
+        val sectionWidth = width / _playerNumbers
         var sectionStart = 0f
         var sectionEnd = sectionWidth
-        (0 until playerNumbers).map {
+        (0 until _playerNumbers).map {
             val xScale = (sectionEnd + sectionStart) / 2
             sectionStart += sectionWidth
             sectionEnd += sectionWidth
@@ -68,13 +67,13 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun generateHorizontalLines() {
+     fun initHorizontalLines() {
         if (_verticalLinesFlow.value.isEmpty()) return
         val horizontalLinesMatrix = getHorizontalLineMatrix()
         (0 until _verticalLinesFlow.value.size - 1).map { index ->
             val currentLine = _verticalLinesFlow.value[index]
             val nextLine = _verticalLinesFlow.value[index + 1]
-            generateHorizontalLines(
+            initHorizontalLines(
                 currentLine.startX,
                 nextLine.startX,
                 currentLine.startY,
@@ -86,7 +85,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun generateHorizontalLines(
+    private fun initHorizontalLines(
         startX: Float,
         endX: Float,
         minY: Float,
@@ -109,8 +108,8 @@ class MainViewModel : ViewModel() {
     }
 
     private fun getHorizontalLineMatrix(): Array<BooleanArray> {
-        val horizontalLineMatrix = Array(playerNumbers) { BooleanArray(HORIZONTAL_LINE_SECTIONS) }
-        (0 until playerNumbers).forEach { index ->
+        val horizontalLineMatrix = Array(_playerNumbers) { BooleanArray(HORIZONTAL_LINE_SECTIONS) }
+        (0 until _playerNumbers).forEach { index ->
             val availableIndices = (0 until HORIZONTAL_LINE_SECTIONS).toMutableList()
             if (index > 0) {
                 horizontalLineMatrix[index - 1].forEachIndexed { j, value ->
@@ -118,7 +117,7 @@ class MainViewModel : ViewModel() {
                 }
             }
             val remainingTrueCount = when {
-                availableIndices.size > playerNumbers -> (MINIMUM_COUNT..playerNumbers).random()
+                availableIndices.size >= MAXIMUM_COUNT -> (MINIMUM_COUNT .. MAXIMUM_COUNT).random()
                 else -> (MINIMUM_COUNT..availableIndices.size).random()
             }
             availableIndices.shuffled()
@@ -133,5 +132,6 @@ class MainViewModel : ViewModel() {
     companion object {
         private const val HORIZONTAL_LINE_SECTIONS = 10
         private const val MINIMUM_COUNT = 2
+        private const val MAXIMUM_COUNT = 8
     }
 }
