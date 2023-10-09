@@ -11,6 +11,9 @@ class MainViewModel : ViewModel() {
     private val _playerLabelsFlow = MutableStateFlow<List<String>>(emptyList())
     val playerLabelsFlow get() = _playerLabelsFlow.asStateFlow()
 
+    private val _gameResultLabelsFlow = MutableStateFlow<List<String>>(emptyList())
+    val gameResultLabelsFlow get() = _gameResultLabelsFlow.asStateFlow()
+
     private val _verticalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val verticalLinesFlow get() = _verticalLinesFlow.asStateFlow()
 
@@ -21,14 +24,33 @@ class MainViewModel : ViewModel() {
 
     fun initGame(width: Float, height: Float) {
         initGamePlayers()
+        initGameResult()
         generateVerticalLines(width, height)
     }
 
     private fun initGamePlayers() {
         (1 .. playerNumbers).map { playerNumber ->
-            "P$playerNumber"
+            if (playerNumber == 1) {
+                "P${playerNumber + 10}"
+            } else {
+                "P$playerNumber"
+            }
+
         }.let { playerLabels ->
             _playerLabelsFlow.update { playerLabels }
+        }
+    }
+
+    private fun initGameResult() {
+        val resultIndex = (0 until playerNumbers).random()
+        (0 until playerNumbers).map { index ->
+            if (index == resultIndex) {
+                "WIN"
+            } else {
+                "LOSE"
+            }
+        }.let { gameResults ->
+            _gameResultLabelsFlow.update { gameResults }
         }
     }
 

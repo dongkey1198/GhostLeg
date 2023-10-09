@@ -31,13 +31,13 @@
         android:id="@+id/ladderView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/layoutPlayerResult"
+        app:layout_constraintBottom_toTopOf="@id/layoutGameResult"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/layoutPlayerLabel" />
 
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:id="@+id/layoutPlayerResult"
+    <LinearLayout
+        android:id="@+id/layoutGameResult"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"

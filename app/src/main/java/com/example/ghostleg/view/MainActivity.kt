@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initPlayerLabels()
+        initGameResults()
         initLadderView()
         initStartButton()
     }
@@ -37,9 +38,27 @@ class MainActivity : AppCompatActivity() {
                         textSize = 16f
                         gravity = Gravity.CENTER
                         typeface = Typeface.DEFAULT_BOLD
-                        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1.0f)
+                        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f)
                     }.let {
                         binding.layoutPlayerLabel.addView(it)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun initGameResults() {
+        lifecycleScope.launch(Dispatchers.Main) {
+            viewModel.gameResultLabelsFlow.collect { gameResults ->
+                gameResults.forEach { gameResult ->
+                    TextView(this@MainActivity).apply {
+                        text = gameResult
+                        textSize = 16f
+                        gravity = Gravity.CENTER
+                        typeface = Typeface.DEFAULT_BOLD
+                        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f)
+                    }.let {
+                        binding.layoutGameResult.addView(it)
                     }
                 }
             }
