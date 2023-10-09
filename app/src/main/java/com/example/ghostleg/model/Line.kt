@@ -8,4 +8,3 @@ data class Line(
     val color: Int = android.graphics.Color.BLACK,
     val stroke: Float = 10f
 )
-
