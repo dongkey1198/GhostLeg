@@ -1,5 +1,6 @@
 package com.example.ghostleg.view
 
+import android.animation.ObjectAnimator
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -98,10 +99,21 @@ class MainActivity : AppCompatActivity() {
             }
             // Ladder Routes
             launch {
-                viewModel.ladderRoutesFlow.collect { ladderRoutes ->
-                    // TODO: 루트 그리기
+                viewModel.ladderRoutesFlow.collect {
+                    binding.ladderRoutesView.initView(it)
+                    startAnimation()
                 }
             }
         }
+    }
+
+    private fun startAnimation() {
+        ObjectAnimator.ofFloat(binding.ladderRoutesView, ANIMATION_PROPERTY, 0.0f, 1.0f)
+            .apply { duration = 3000L }
+            .run { start() }
+    }
+
+    companion object {
+        private const val ANIMATION_PROPERTY = "percentage"
     }
 }

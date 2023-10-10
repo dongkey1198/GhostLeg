@@ -2,8 +2,10 @@ package com.example.ghostleg.view.custom
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PathMeasure
 import android.util.AttributeSet
 import android.view.View
 import com.example.ghostleg.model.LadderRoute
@@ -11,10 +13,15 @@ import com.example.ghostleg.model.LadderRoute
 class LadderRoutesView(context: Context, attr: AttributeSet?) : View(context, attr) {
 
     private val _ladderRoutes = mutableListOf<LadderRoute>()
+    private var _percentage = 0f
 
     fun initView(ladderRoute: List<LadderRoute>) {
         _ladderRoutes.clear()
         _ladderRoutes.addAll(ladderRoute)
+    }
+
+    fun setPercentage(percentage: Float) {
+        _percentage = percentage
         invalidate()
     }
 
@@ -26,7 +33,10 @@ class LadderRoutesView(context: Context, attr: AttributeSet?) : View(context, at
     private fun drawPaths(canvas: Canvas) {
         _ladderRoutes.forEach {
             val path = createPath(it.pathScales)
+            val pathLength = PathMeasure(path, false).length
+            val total = pathLength - pathLength * _percentage
             val paint = createPaint(it.lineColor, it.stroke)
+            paint.pathEffect = DashPathEffect(floatArrayOf(pathLength, pathLength), total)
             canvas.drawPath(path, paint)
         }
     }
