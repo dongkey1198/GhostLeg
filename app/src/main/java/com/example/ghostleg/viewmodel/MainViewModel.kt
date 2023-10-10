@@ -44,6 +44,7 @@ class MainViewModel : ViewModel() {
         initGameResult()
         initRandomLineMatrix()
         initHorizontalLines()
+        updateLadderRoutes(emptyList())
     }
 
     fun startGame() {
@@ -181,13 +182,17 @@ class MainViewModel : ViewModel() {
         }.map { pathScale ->
             LadderRoute(pathScales = pathScale)
         }.let { ladderRoutes ->
-            _ladderRoutesFlow.update { ladderRoutes }
+            updateLadderRoutes(ladderRoutes)
         }
     }
 
     private fun getRoute(i: Int, j: Int): Pair<Float, Float> {
         val scales = _ladderMatrix[i][j]
         return Pair(scales.first, scales.second)
+    }
+
+    private fun updateLadderRoutes(ladderRoutes: List<LadderRoute>) {
+        _ladderRoutesFlow.update { ladderRoutes }
     }
 
     companion object {
