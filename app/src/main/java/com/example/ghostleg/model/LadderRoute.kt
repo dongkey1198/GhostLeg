@@ -15,9 +15,9 @@ data class LadderRoute(
             val random = Random
             return Color.argb(
                 255,
-                random.nextInt(256),
-                random.nextInt(256),
-                random.nextInt(256)
+                random.nextInt(200) + 100,
+                random.nextInt(200) + 100,
+                random.nextInt(200) + 100
             )
         }
     }
