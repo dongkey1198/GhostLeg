@@ -6,7 +6,6 @@ import android.animation.ObjectAnimator
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.ViewTreeObserver
 import android.widget.LinearLayout.LayoutParams
@@ -28,11 +27,11 @@ class MainActivity : AppCompatActivity() {
                 duration = 3000L
                 addListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationStart(animation: Animator) {
-                        Log.d("aaa", "Aaaa")
+                        viewModel.updateStartButtonState()
                     }
 
                     override fun onAnimationEnd(animation: Animator) {
-                        Log.d("aaa", "BBBB")
+
                     }
                 })
             }
@@ -136,6 +135,11 @@ class MainActivity : AppCompatActivity() {
                             animator.cancel()
                         }
                     }
+                }
+            }
+            launch {
+                viewModel.startButtonStateFlow.collect {
+                    binding.buttonStart.isEnabled = it
                 }
             }
         }

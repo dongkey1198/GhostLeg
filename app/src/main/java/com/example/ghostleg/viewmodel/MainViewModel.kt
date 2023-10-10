@@ -24,6 +24,9 @@ class MainViewModel : ViewModel() {
     private val _ladderRoutesFlow = MutableStateFlow<List<LadderRoute>>(emptyList())
     val ladderRoutesFlow get() = _ladderRoutesFlow.asStateFlow()
 
+    private val _startButtonStateFlow = MutableStateFlow<Boolean>(true)
+    val startButtonStateFlow get() = _startButtonStateFlow.asStateFlow()
+
     private val _ladderMatrix = mutableListOf<List<Pair<Float, Float>>>()
     private val _randomLineMatrix = mutableListOf<List<Int>>()
     private var _playerNumbers = 6
@@ -45,10 +48,15 @@ class MainViewModel : ViewModel() {
         initRandomLineMatrix()
         initHorizontalLines()
         updateLadderRoutes(emptyList())
+        updateStartButtonState()
     }
 
     fun startGame() {
         findRoutes()
+    }
+
+    fun updateStartButtonState() {
+        _startButtonStateFlow.update { !_startButtonStateFlow.value }
     }
 
     private fun initGamePlayers() {
