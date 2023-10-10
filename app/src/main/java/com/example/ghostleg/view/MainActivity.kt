@@ -1,9 +1,12 @@
 package com.example.ghostleg.view
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.ViewTreeObserver
 import android.widget.LinearLayout.LayoutParams
@@ -19,6 +22,21 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
+    private val animator by lazy {
+        ObjectAnimator.ofFloat(binding.ladderRoutesView, ANIMATION_PROPERTY, 0.0f, 1.0f)
+            .apply {
+                duration = 3000L
+                addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationStart(animation: Animator) {
+                        Log.d("aaa", "Aaaa")
+                    }
+
+                    override fun onAnimationEnd(animation: Animator) {
+                        Log.d("aaa", "BBBB")
+                    }
+                })
+            }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +51,8 @@ class MainActivity : AppCompatActivity() {
     private fun initGame() {
         viewModel.initGame()
         binding.ladderView.apply {
-            viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            viewTreeObserver.addOnGlobalLayoutListener(object :
+                ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     viewModel.initLadder(width.toFloat(), height.toFloat())
                     viewTreeObserver.removeOnGlobalLayoutListener(this)
@@ -65,7 +84,11 @@ class MainActivity : AppCompatActivity() {
                             textSize = 16f
                             gravity = Gravity.CENTER
                             typeface = Typeface.DEFAULT_BOLD
-                            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1.0f)
+                            layoutParams = LayoutParams(
+                                LayoutParams.MATCH_PARENT,
+                                LayoutParams.MATCH_PARENT,
+                                1.0f
+                            )
                         }.let {
                             binding.layoutPlayerLabel.addView(it)
                         }
@@ -82,7 +105,11 @@ class MainActivity : AppCompatActivity() {
                             textSize = 16f
                             gravity = Gravity.CENTER
                             typeface = Typeface.DEFAULT_BOLD
-                            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1.0f)
+                            layoutParams = LayoutParams(
+                                LayoutParams.MATCH_PARENT,
+                                LayoutParams.MATCH_PARENT,
+                                1.0f
+                            )
                         }.let {
                             binding.layoutGameResult.addView(it)
                         }
@@ -99,18 +126,19 @@ class MainActivity : AppCompatActivity() {
             }
             // Ladder Routes
             launch {
-                viewModel.ladderRoutesFlow.collect {
-                    binding.ladderRoutesView.initView(it)
-                    startAnimation()
+                viewModel.ladderRoutesFlow.collect { ladderRoutes ->
+                    with(binding.ladderRoutesView) {
+                        if (ladderRoutes.isNotEmpty()) {
+                            initView(ladderRoutes)
+                            animator.start()
+                        } else {
+                            resetView()
+                            animator.cancel()
+                        }
+                    }
                 }
             }
         }
-    }
-
-    private fun startAnimation() {
-        ObjectAnimator.ofFloat(binding.ladderRoutesView, ANIMATION_PROPERTY, 0.0f, 1.0f)
-            .apply { duration = 3000L }
-            .run { start() }
     }
 
     companion object {

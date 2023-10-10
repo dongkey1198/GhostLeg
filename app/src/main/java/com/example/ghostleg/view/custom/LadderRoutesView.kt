@@ -20,6 +20,11 @@ class LadderRoutesView(context: Context, attr: AttributeSet?) : View(context, at
         _ladderRoutes.addAll(ladderRoute)
     }
 
+    fun resetView() {
+        _ladderRoutes.clear()
+        invalidate()
+    }
+
     fun setPercentage(percentage: Float) {
         _percentage = percentage
         invalidate()
