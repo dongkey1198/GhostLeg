@@ -3,4 +3,5 @@
     <string name="label_game_title">사타리 타기</string>
     <string name="label_button_start">시작하기</string>
     <string name="label_button_reset">초기화</string>
+    <string name="label_question_mark">\?</string>
 </resources>
