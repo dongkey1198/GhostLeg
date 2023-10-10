@@ -51,20 +51,20 @@ class MainViewModel : ViewModel() {
         initRandomLineMatrix()
         initHorizontalLines()
         updateLadderRoutes(emptyList())
-        updateStartButtonState()
-        updateResultBlindState()
+        updateStartButtonState(true)
+        updateResultBlindState(true)
     }
 
     fun startGame() {
         findRoutes()
     }
 
-    fun updateStartButtonState() {
-        _startButtonStateFlow.update { !_startButtonStateFlow.value }
+    fun updateStartButtonState(isShow: Boolean = false) {
+        _startButtonStateFlow.update { isShow }
     }
 
-    fun updateResultBlindState() {
-        _resultBlindStateFlow.update { !_resultBlindStateFlow.value }
+    fun updateResultBlindState(isShow: Boolean = false) {
+        _resultBlindStateFlow.update { isShow }
     }
 
     private fun initGamePlayers() {
