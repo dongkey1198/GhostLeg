@@ -39,9 +39,9 @@ class LadderRoutesView(context: Context, attr: AttributeSet?) : View(context, at
         _ladderRoutes.forEach {
             val path = createPath(it.pathScales)
             val pathLength = PathMeasure(path, false).length
-            val total = pathLength - pathLength * _percentage
+            val phase = pathLength - pathLength * _percentage
             val paint = createPaint(it.lineColor, it.stroke)
-            paint.pathEffect = DashPathEffect(floatArrayOf(pathLength, pathLength), total)
+            paint.pathEffect = DashPathEffect(floatArrayOf(pathLength, pathLength), phase)
             canvas.drawPath(path, paint)
         }
     }
