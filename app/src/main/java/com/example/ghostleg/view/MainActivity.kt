@@ -7,6 +7,7 @@ import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Gravity
+import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
@@ -31,7 +32,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     override fun onAnimationEnd(animation: Animator) {
-
+                        viewModel.updateResultBlindState()
                     }
                 })
             }
@@ -137,9 +138,20 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+            // Start Button
             launch {
                 viewModel.startButtonStateFlow.collect {
                     binding.buttonStart.isEnabled = it
+                }
+            }
+            // Result Blind
+            launch {
+                viewModel.resultBlindStateFlow.collect {
+                    if (it) {
+                        binding.textViewBlind.visibility = View.VISIBLE
+                    } else {
+                        binding.textViewBlind.visibility = View.GONE
+                    }
                 }
             }
         }
