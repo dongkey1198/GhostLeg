@@ -105,7 +105,9 @@ class MainActivity : AppCompatActivity() {
             }
             // Horizontal Lines
             launch {
-                viewModel.horizontalLinesFlow.collect { binding.ladderView.updateHorizontalLines(it) }
+                viewModel.horizontalLinesFlow.collect {
+                    binding.ladderView.updateHorizontalLines(it)
+                }
             }
             // Ladder Routes
             launch {
@@ -153,6 +155,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        animator.end()
     }
 
     private fun createTextView(label: String): TextView {
