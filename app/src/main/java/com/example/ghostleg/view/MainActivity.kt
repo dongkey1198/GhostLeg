@@ -135,8 +135,6 @@ class MainActivity : AppCompatActivity() {
                             animator.start()
                         } else {
                             resetView()
-                            // 지워야함..
-                            animator.cancel()
                         }
                     }
                 }
