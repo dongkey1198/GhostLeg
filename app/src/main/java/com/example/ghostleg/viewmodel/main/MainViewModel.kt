@@ -131,9 +131,9 @@ class MainViewModel(
     }
 
     private fun initLadderMatrix(width: Float, height: Float) {
-        val lastPosition = HORIZONTAL_LINE_SECTIONS + 2
+        val lastPosition = HORIZONTAL_LINE_COUNT + 2
         val sectionWidth = width / _playerLabelsFlow.value.size
-        val sectionHeight = height / HORIZONTAL_LINE_SECTIONS
+        val sectionHeight = height / HORIZONTAL_LINE_COUNT
         (0 until lastPosition).map { y ->
             (0 until _playerLabelsFlow.value.size).map { x ->
                 val xScale = (sectionWidth * (x + 1) + sectionWidth * x) / 2
@@ -156,7 +156,7 @@ class MainViewModel(
     private fun initRandomLineMatrix() {
         val randomIndices = getRandomIndices()
         val horizontalLineMatrix =
-            Array(HORIZONTAL_LINE_SECTIONS + 2) { IntArray(_playerLabelsFlow.value.size) }
+            Array(HORIZONTAL_LINE_COUNT + 2) { IntArray(_playerLabelsFlow.value.size) }
         (0 until _playerLabelsFlow.value.size - 1).forEach { x ->
             randomIndices[x].forEach { y ->
                 horizontalLineMatrix[y][x] = 1
@@ -172,7 +172,7 @@ class MainViewModel(
     private fun getRandomIndices(): List<List<Int>> {
         val randomIndices = mutableListOf<List<Int>>()
         (0 until _playerLabelsFlow.value.size - 1).forEach { index ->
-            val availableIndices = (1..HORIZONTAL_LINE_SECTIONS).toMutableList()
+            val availableIndices = (1..HORIZONTAL_LINE_COUNT).toMutableList()
             if (index > 0) {
                 randomIndices[index - 1].forEach { value ->
                     if (availableIndices.contains(value)) availableIndices.remove(value)
@@ -246,7 +246,7 @@ class MainViewModel(
                         pathScales.add(getRoute(++y, x))
                     }
                 }
-            } while (y < HORIZONTAL_LINE_SECTIONS + 1)
+            } while (y < HORIZONTAL_LINE_COUNT + 1)
             pathScales
         }.map { pathScale ->
             LadderRoute(pathScales = pathScale)
@@ -283,7 +283,7 @@ class MainViewModel(
     }
 
     companion object {
-        private const val HORIZONTAL_LINE_SECTIONS = 10
+        private const val HORIZONTAL_LINE_COUNT = 10
         private const val MINIMUM_COUNT = 2
         private const val MAXIMUM_COUNT = 8
         private const val LABEL_PLAYER = "P"
