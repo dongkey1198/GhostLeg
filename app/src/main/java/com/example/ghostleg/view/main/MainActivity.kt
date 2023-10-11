@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
                 duration = GAME_PLAYING_DURATION
                 addListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
-                        viewModel.endGame()
+                        viewModel.gameEnded()
                     }
                 })
             }
@@ -50,12 +50,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initGame() {
-        viewModel.initGame()
         binding.ladderView.apply {
             viewTreeObserver.addOnGlobalLayoutListener(object :
                 ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
-                    viewModel.initLadder(width.toFloat(), height.toFloat())
+                    viewModel.ladderViewSizeDetected(width.toFloat(), height.toFloat())
                     viewTreeObserver.removeOnGlobalLayoutListener(this)
                 }
             })
@@ -64,13 +63,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun initStartButton() {
         binding.buttonStart.setOnClickListener {
-            viewModel.startGame()
+            viewModel.startButtonClicked()
         }
     }
 
     private fun initResetButton() {
         binding.buttonReset.setOnClickListener {
-            viewModel.resetGame()
+            viewModel.resetButtonClicked()
         }
     }
 
@@ -85,6 +84,7 @@ class MainActivity : AppCompatActivity() {
             // Player Labels
             launch {
                 viewModel.playerLabelsFlow.collect { playerLabels ->
+                    binding.layoutPlayerLabel.removeAllViews()
                     playerLabels.forEach { playerLabel ->
                         TextView(this@MainActivity).apply {
                             text = playerLabel

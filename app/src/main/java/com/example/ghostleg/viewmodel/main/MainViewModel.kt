@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -44,50 +45,45 @@ class MainViewModel(
     private val _gameStateMessageFlow = MutableSharedFlow<Unit>()
     val gameStateMessageFlow get() = _gameStateMessageFlow.asSharedFlow()
 
+    private val _ladderViewSizeFlow = MutableStateFlow<Pair<Float, Float>>(Pair(0f, 0f))
     private val _ladderMatrix = mutableListOf<List<Pair<Float, Float>>>()
     private val _randomLineMatrix = mutableListOf<List<Int>>()
-    private var _playerNumbers = 6
     private var _isPlaying = false
 
-    fun initGame() {
-        initGamePlayers()
-        initGameResult()
+    init {
+        viewModelScope.launch(Dispatchers.Default) {
+            combine(ladderGameRepository.playerCount, _ladderViewSizeFlow) { playerCount, ladderViewSize ->
+                Pair(playerCount, ladderViewSize)
+            }.collect { (playerCount, ladderViewSize) -> initGame(playerCount, ladderViewSize) }
+        }
     }
 
-    fun initLadder(width: Float, height: Float) {
-        initLadderMatrix(width, height)
-        initRandomLineMatrix()
-        initVerticalLines()
-        initHorizontalLines()
+    fun ladderViewSizeDetected(width: Float, height: Float) {
+        _ladderViewSizeFlow.update { Pair(width, height) }
     }
 
-    fun startGame() {
-        updateIsPlaying(true)
-        updateStartButtonState(false)
-        findRoutes()
+    fun startButtonClicked() {
+        setIsPlaying(true)
+        setStartButtonState(false)
+        generateRoutes()
     }
 
-    fun endGame() {
-        updateIsPlaying(false)
-        updateResultBlindState(false)
+    fun gameEnded() {
+        setIsPlaying(false)
+        setResultBlindState(false)
     }
 
-    fun resetGame() {
+    fun resetButtonClicked() {
         if (_isPlaying) {
-            updateGameStateMessageFlow()
+            setGameStateMessageFlow()
         } else {
-            initGameResult()
-            initRandomLineMatrix()
-            initHorizontalLines()
-            updateLadderRoutes(emptyList())
-            updateStartButtonState(true)
-            updateResultBlindState(true)
+            resetGame()
         }
     }
 
     fun settingButtonClicked() {
         if (_isPlaying) {
-            updateGameStateMessageFlow()
+            setGameStateMessageFlow()
         } else {
             viewModelScope.launch(Dispatchers.Default) {
                 _moveToSettingPageFlow.emit(Unit)
@@ -95,33 +91,48 @@ class MainViewModel(
         }
     }
 
-    private fun initGamePlayers() {
-        (1 .. _playerNumbers).map { playerNumber ->
-            "P$playerNumber"
-        }.let { playerLabels ->
-            _playerLabelsFlow.update { playerLabels }
-        }
+    private fun initGame(playerCount: Int, ladderViewSize: Pair<Float, Float>) {
+        initGamePlayers(playerCount)
+        initGameResult()
+        initLadderMatrix(ladderViewSize.first, ladderViewSize.second)
+        initRandomLineMatrix()
+        initVerticalLines()
+        initHorizontalLines()
+        setLadderRoutes(emptyList())
+        setStartButtonState(true)
+        setResultBlindState(true)
+    }
+
+    private fun resetGame() {
+        initGameResult()
+        initRandomLineMatrix()
+        initHorizontalLines()
+        setLadderRoutes(emptyList())
+        setStartButtonState(true)
+        setResultBlindState(true)
+    }
+
+    private fun initGamePlayers(playerCount: Int) {
+        (1 .. playerCount)
+            .map { index -> "$LABEL_PLAYER$index" }
+            .let { playerLabels -> _playerLabelsFlow.update { playerLabels } }
     }
 
     private fun initGameResult() {
-        val resultIndex = (0 until _playerNumbers).random()
-        (0 until _playerNumbers).map { index ->
-            if (index == resultIndex) {
-                "WIN"
-            } else {
-                "LOSE"
-            }
-        }.let { gameResults ->
-            _gameResultLabelsFlow.update { gameResults }
+        val resultIndex = (0 until _playerLabelsFlow.value.size).random()
+        (0 until _playerLabelsFlow.value.size).map { index ->
+            if (index == resultIndex) LABEL_WIN else LABEL_LOSE
+        }.let { gameResultLabels ->
+            _gameResultLabelsFlow.update { gameResultLabels }
         }
     }
 
     private fun initLadderMatrix(width: Float, height: Float) {
         val lastPosition = HORIZONTAL_LINE_SECTIONS + 2
-        val sectionWidth = width / _playerNumbers
+        val sectionWidth = width / _playerLabelsFlow.value.size
         val sectionHeight = height / HORIZONTAL_LINE_SECTIONS
         (0 until lastPosition).map { y ->
-            (0 until _playerNumbers).map { x ->
+            (0 until _playerLabelsFlow.value.size).map { x ->
                 val xScale =  (sectionWidth * (x + 1) + sectionWidth * x) / 2
                 val yScale = when {
                     // 출발 지점
@@ -141,8 +152,8 @@ class MainViewModel(
 
     private fun initRandomLineMatrix() {
         val randomIndices = getRandomIndices()
-        val horizontalLineMatrix = Array(HORIZONTAL_LINE_SECTIONS + 2) { IntArray(_playerNumbers) }
-        (0 until _playerNumbers - 1).forEach { x ->
+        val horizontalLineMatrix = Array(HORIZONTAL_LINE_SECTIONS + 2) { IntArray(_playerLabelsFlow.value.size) }
+        (0 until _playerLabelsFlow.value.size - 1).forEach { x ->
             randomIndices[x].forEach { y ->
                 horizontalLineMatrix[y][x] = 1
                 horizontalLineMatrix[y][x + 1] = 2
@@ -156,7 +167,7 @@ class MainViewModel(
 
     private fun getRandomIndices(): List<List<Int>> {
         val randomIndices = mutableListOf<List<Int>>()
-        (0 until _playerNumbers - 1).forEach { index ->
+        (0 until _playerLabelsFlow.value.size - 1).forEach { index ->
             val availableIndices = (1 .. HORIZONTAL_LINE_SECTIONS).toMutableList()
             if (index > 0) {
                 randomIndices[index - 1].forEach { value ->
@@ -174,7 +185,7 @@ class MainViewModel(
     }
 
     private fun initVerticalLines() {
-        (0 until _playerNumbers).map { index ->
+        (0 until _playerLabelsFlow.value.size).map { index ->
             val startMatrix = _ladderMatrix.first()
             val endMatrix = _ladderMatrix.last()
             Line(startMatrix[index].first, startMatrix[index].second, endMatrix[index].first, endMatrix[index].second)
@@ -198,8 +209,8 @@ class MainViewModel(
         _horizontalLinesFlow.update { horizontalLines }
     }
 
-    private fun findRoutes() {
-        (0 until _playerNumbers).map { index ->
+    private fun generateRoutes() {
+        (0 until _playerLabelsFlow.value.size).map { index ->
             var y = 0
             var x = index
             val pathScales = mutableListOf<Pair<Float, Float>>()
@@ -226,7 +237,7 @@ class MainViewModel(
         }.map { pathScale ->
             LadderRoute(pathScales = pathScale)
         }.let { ladderRoutes ->
-            updateLadderRoutes(ladderRoutes)
+            setLadderRoutes(ladderRoutes)
         }
     }
 
@@ -235,25 +246,25 @@ class MainViewModel(
         return Pair(scales.first, scales.second)
     }
 
-    private fun updateLadderRoutes(ladderRoutes: List<LadderRoute>) {
+    private fun setLadderRoutes(ladderRoutes: List<LadderRoute>) {
         _ladderRoutesFlow.update { ladderRoutes }
     }
 
-    private fun updateGameStateMessageFlow() {
+    private fun setGameStateMessageFlow() {
         viewModelScope.launch(Dispatchers.Default) {
             _gameStateMessageFlow.emit(Unit)
         }
     }
 
-    private fun updateStartButtonState(isShow: Boolean) {
+    private fun setStartButtonState(isShow: Boolean) {
         _startButtonStateFlow.update { isShow }
     }
 
-    private fun updateResultBlindState(isShow: Boolean = false) {
+    private fun setResultBlindState(isShow: Boolean = false) {
         _resultBlindStateFlow.update { isShow }
     }
 
-    private fun updateIsPlaying(isPlaying: Boolean = false) {
+    private fun setIsPlaying(isPlaying: Boolean = false) {
         _isPlaying = isPlaying
     }
 
@@ -261,5 +272,8 @@ class MainViewModel(
         private const val HORIZONTAL_LINE_SECTIONS = 10
         private const val MINIMUM_COUNT = 2
         private const val MAXIMUM_COUNT = 8
+        private const val LABEL_PLAYER = "P"
+        private const val LABEL_WIN = "WIN"
+        private const val LABEL_LOSE = "LOSE"
     }
 }
