@@ -1,4 +1,4 @@
-package com.example.ghostleg.view
+package com.example.ghostleg.view.main
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -12,13 +12,12 @@ import android.view.ViewTreeObserver
 import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.ghostleg.R
 import com.example.ghostleg.databinding.ActivityMainBinding
 import com.example.ghostleg.view.setting.SettingActivity
-import com.example.ghostleg.viewmodel.MainViewModel
+import com.example.ghostleg.viewmodel.main.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -37,10 +36,6 @@ class MainActivity : AppCompatActivity() {
                 })
             }
     }
-    private val settingActivityResult =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-
-        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -177,11 +172,7 @@ class MainActivity : AppCompatActivity() {
             // Move to Setting Activity
             launch {
                 viewModel.moveToSettingPageFlow.collect {
-                    SettingActivity.buildIntent(this@MainActivity).apply {
-                        putExtra(SettingActivity.INTENT_KEY_PLAYER_COUNT, it)
-                    }.let { intent ->
-                        settingActivityResult.launch(intent)
-                    }
+                    startActivity(SettingActivity.buildIntent(this@MainActivity))
                 }
             }
         }

@@ -1,9 +1,9 @@
-package com.example.ghostleg.viewmodel
+package com.example.ghostleg.viewmodel.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ghostleg.model.Line
-import com.example.ghostleg.model.LadderRoute
+import com.example.ghostleg.data.model.Line
+import com.example.ghostleg.data.model.LadderRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +35,7 @@ class MainViewModel : ViewModel() {
     private val _resultBlindStateFlow = MutableStateFlow<Boolean>(true)
     val resultBlindStateFlow get() = _resultBlindStateFlow.asStateFlow()
 
-    private val _moveToSettingPageFlow = MutableSharedFlow<Int>()
+    private val _moveToSettingPageFlow = MutableSharedFlow<Unit>()
     val moveToSettingPageFlow get() = _moveToSettingPageFlow.asSharedFlow()
 
     private val _gameStateMessageFlow = MutableSharedFlow<Unit>()
@@ -87,7 +87,7 @@ class MainViewModel : ViewModel() {
             updateGameStateMessageFlow()
         } else {
             viewModelScope.launch(Dispatchers.Default) {
-                _moveToSettingPageFlow.emit(_playerNumbers)
+                _moveToSettingPageFlow.emit(Unit)
             }
         }
     }

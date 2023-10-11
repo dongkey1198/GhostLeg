@@ -1,4 +1,4 @@
-package com.example.ghostleg.view.custom
+package com.example.ghostleg.view.main.custom
 
 import android.content.Context
 import android.graphics.Canvas
@@ -8,7 +8,7 @@ import android.graphics.Path
 import android.graphics.PathMeasure
 import android.util.AttributeSet
 import android.view.View
-import com.example.ghostleg.model.LadderRoute
+import com.example.ghostleg.data.model.LadderRoute
 
 class LadderRoutesView(context: Context, attr: AttributeSet?) : View(context, attr) {
 
