@@ -30,8 +30,8 @@ class MainViewModel(
     private val _horizontalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val horizontalLinesFlow get() = _horizontalLinesFlow.asStateFlow()
 
-    private val _ladderRoutesFlow = MutableStateFlow<List<LadderRoute>>(emptyList())
-    val ladderRoutesFlow get() = _ladderRoutesFlow.asStateFlow()
+    private val _ladderRoutesFlow = MutableSharedFlow<List<LadderRoute>>()
+    val ladderRoutesFlow get() = _ladderRoutesFlow.asSharedFlow()
 
     private val _startButtonStateFlow = MutableStateFlow<Boolean>(true)
     val startButtonStateFlow get() = _startButtonStateFlow.asStateFlow()
@@ -247,7 +247,9 @@ class MainViewModel(
     }
 
     private fun setLadderRoutes(ladderRoutes: List<LadderRoute>) {
-        _ladderRoutesFlow.update { ladderRoutes }
+        viewModelScope.launch {
+            _ladderRoutesFlow.emit(ladderRoutes)
+        }
     }
 
     private fun setGameStateMessageFlow() {
