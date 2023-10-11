@@ -47,7 +47,7 @@ class MainViewModel(
 
     private val _ladderViewSizeFlow = MutableStateFlow<Pair<Float, Float>>(Pair(0f, 0f))
     private val _ladderMatrix = mutableListOf<List<Pair<Float, Float>>>()
-    private val _randomLineMatrix = mutableListOf<MutableList<Direction>>()
+    private val _ladderPathMatrix = mutableListOf<MutableList<Direction>>()
     private var _isPlaying = false
 
     init {
@@ -97,7 +97,7 @@ class MainViewModel(
         initGamePlayers(playerCount)
         initGameResult()
         initLadderMatrix(ladderViewSize.first, ladderViewSize.second)
-        initRandomLineMatrix()
+        initLadderPathMatrix()
         initVerticalLines()
         initHorizontalLines()
         setLadderRoutes(emptyList())
@@ -107,7 +107,7 @@ class MainViewModel(
 
     private fun resetGame() {
         initGameResult()
-        initRandomLineMatrix()
+        initLadderPathMatrix()
         initHorizontalLines()
         setLadderRoutes(emptyList())
         setStartButtonState(true)
@@ -152,7 +152,7 @@ class MainViewModel(
         }
     }
 
-    private fun initRandomLineMatrix() {
+    private fun initLadderPathMatrix() {
         val randomIndices = getRandomIndices()
         val horizontalLineMatrix = MutableList(HORIZONTAL_LINE_COUNT + 2) {
             MutableList(_playerLabelsFlow.value.size) { Direction.DOWN }
@@ -163,8 +163,8 @@ class MainViewModel(
                 horizontalLineMatrix[y][x + 1] = Direction.LEFT_DOWN
             }
         }
-        _randomLineMatrix.clear()
-        _randomLineMatrix.addAll(horizontalLineMatrix)
+        _ladderPathMatrix.clear()
+        _ladderPathMatrix.addAll(horizontalLineMatrix)
     }
 
     private fun getRandomIndices(): List<List<Int>> {
@@ -203,9 +203,9 @@ class MainViewModel(
 
     private fun initHorizontalLines() {
         val horizontalLines = mutableListOf<Line>()
-        (1 until _randomLineMatrix.size - 1).forEach { y ->
-            (0 until _randomLineMatrix[y].size - 1).forEach { x ->
-                if (_randomLineMatrix[y][x] == Direction.RIGHT_DOWN) {
+        (1 until _ladderPathMatrix.size - 1).forEach { y ->
+            (0 until _ladderPathMatrix[y].size - 1).forEach { x ->
+                if (_ladderPathMatrix[y][x] == Direction.RIGHT_DOWN) {
                     val startMatrix = _ladderMatrix[y][x]
                     val endMatrix = _ladderMatrix[y][x + 1]
                     val line = Line(
@@ -227,7 +227,7 @@ class MainViewModel(
             var x = index
             val paths = mutableListOf<Pair<Float, Float>>()
             do {
-                when (_randomLineMatrix[y][x]) {
+                when (_ladderPathMatrix[y][x]) {
                     Direction.DOWN -> {
                         paths.add(getPath(y++, x))
                     }
