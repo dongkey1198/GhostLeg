@@ -154,17 +154,17 @@ class MainViewModel(
 
     private fun initLadderPathMatrix() {
         val randomIndices = getRandomIndices()
-        val horizontalLineMatrix = MutableList(HORIZONTAL_LINE_COUNT + 2) {
+        val ladderPathMatrix = MutableList(HORIZONTAL_LINE_COUNT + 2) {
             MutableList(_playerLabelsFlow.value.size) { Direction.DOWN }
         }
         (0 until _playerLabelsFlow.value.size - 1).forEach { x ->
             randomIndices[x].forEach { y ->
-                horizontalLineMatrix[y][x] = Direction.RIGHT_DOWN
-                horizontalLineMatrix[y][x + 1] = Direction.LEFT_DOWN
+                ladderPathMatrix[y][x] = Direction.RIGHT_DOWN
+                ladderPathMatrix[y][x + 1] = Direction.LEFT_DOWN
             }
         }
         _ladderPathMatrix.clear()
-        _ladderPathMatrix.addAll(horizontalLineMatrix)
+        _ladderPathMatrix.addAll(ladderPathMatrix)
     }
 
     private fun getRandomIndices(): List<List<Int>> {
