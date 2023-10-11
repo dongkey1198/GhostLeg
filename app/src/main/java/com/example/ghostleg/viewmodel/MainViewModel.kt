@@ -2,7 +2,6 @@ package com.example.ghostleg.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ghostleg.R
 import com.example.ghostleg.model.Line
 import com.example.ghostleg.model.LadderRoute
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +35,10 @@ class MainViewModel : ViewModel() {
     private val _resultBlindStateFlow = MutableStateFlow<Boolean>(true)
     val resultBlindStateFlow get() = _resultBlindStateFlow.asStateFlow()
 
-    private val _gameStateMessageFlow = MutableSharedFlow<Int>()
+    private val _moveToSettingPageFlow = MutableSharedFlow<Int>()
+    val moveToSettingPageFlow get() = _moveToSettingPageFlow.asSharedFlow()
+
+    private val _gameStateMessageFlow = MutableSharedFlow<Unit>()
     val gameStateMessageFlow get() = _gameStateMessageFlow.asSharedFlow()
 
     private val _ladderMatrix = mutableListOf<List<Pair<Float, Float>>>()
@@ -77,6 +79,16 @@ class MainViewModel : ViewModel() {
             updateLadderRoutes(emptyList())
             updateStartButtonState(true)
             updateResultBlindState(true)
+        }
+    }
+
+    fun settingButtonClicked() {
+        if (_isPlaying) {
+            updateGameStateMessageFlow()
+        } else {
+            viewModelScope.launch(Dispatchers.Default) {
+                _moveToSettingPageFlow.emit(_playerNumbers)
+            }
         }
     }
 
@@ -226,7 +238,7 @@ class MainViewModel : ViewModel() {
 
     private fun updateGameStateMessageFlow() {
         viewModelScope.launch(Dispatchers.Default) {
-            _gameStateMessageFlow.emit(R.string.label_game_playing_message)
+            _gameStateMessageFlow.emit(Unit)
         }
     }
 

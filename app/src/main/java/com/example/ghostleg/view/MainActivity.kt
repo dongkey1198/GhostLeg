@@ -12,9 +12,12 @@ import android.view.ViewTreeObserver
 import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.example.ghostleg.R
 import com.example.ghostleg.databinding.ActivityMainBinding
+import com.example.ghostleg.view.setting.SettingActivity
 import com.example.ghostleg.viewmodel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,6 +37,10 @@ class MainActivity : AppCompatActivity() {
                 })
             }
     }
+    private val settingActivityResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +79,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initSettingButton() {
-
+        binding.buttonSetting.setOnClickListener {
+            viewModel.settingButtonClicked()
+        }
     }
 
     private fun setObservers() {
@@ -158,7 +167,21 @@ class MainActivity : AppCompatActivity() {
             // Game Playing Message
             launch {
                 viewModel.gameStateMessageFlow.collect {
-                   Toast.makeText(this@MainActivity, getString(it), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.label_game_playing_message),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            // Move to Setting Activity
+            launch {
+                viewModel.moveToSettingPageFlow.collect {
+                    SettingActivity.buildIntent(this@MainActivity).apply {
+                        putExtra(SettingActivity.INTENT_KEY_PLAYER_COUNT, it)
+                    }.let { intent ->
+                        settingActivityResult.launch(intent)
+                    }
                 }
             }
         }
