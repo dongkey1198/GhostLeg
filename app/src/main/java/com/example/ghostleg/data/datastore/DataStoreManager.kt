@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 
 private val Context.ladderGameDataStore: DataStore<Preferences> by preferencesDataStore(name = DataStoreManager.LADDER_GAME_PREFERENCES_NAME)
+
 class DataStoreManager(
     private val context: Context
 ) {
