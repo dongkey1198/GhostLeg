@@ -6,9 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.example.ghostleg.R
 import com.example.ghostleg.databinding.ActivitySettingBinding
 import com.example.ghostleg.viewmodel.setting.SettingViewModel
@@ -58,25 +56,23 @@ class SettingActivity : AppCompatActivity() {
 
     private fun setObservers() {
         lifecycleScope.launch(Dispatchers.Main) {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.playerCountFlow.collect {
-                        binding.textViewPlayerCount.text = it.toString()
-                    }
+            launch {
+                viewModel.playerCountFlow.collect {
+                    binding.textViewPlayerCount.text = it.toString()
                 }
-                launch {
-                    viewModel.playerLimitMessageFlow.collect {
-                        Toast.makeText(
-                            this@SettingActivity,
-                            getString(R.string.label_player_count_limit_message),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+            }
+            launch {
+                viewModel.playerLimitMessageFlow.collect {
+                    Toast.makeText(
+                        this@SettingActivity,
+                        getString(R.string.label_player_count_limit_message),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-                launch {
-                    viewModel.pageCloseFlow.collect {
-                        if (it) finish()
-                    }
+            }
+            launch {
+                viewModel.pageCloseFlow.collect {
+                    if (it) finish()
                 }
             }
         }
