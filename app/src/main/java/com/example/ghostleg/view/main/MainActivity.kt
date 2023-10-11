@@ -13,7 +13,9 @@ import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.ghostleg.R
 import com.example.ghostleg.databinding.ActivityMainBinding
 import com.example.ghostleg.view.setting.SettingActivity
@@ -81,75 +83,77 @@ class MainActivity : AppCompatActivity() {
 
     private fun setObservers() {
         lifecycleScope.launch(Dispatchers.Main) {
-            // Player Labels
-            launch {
-                viewModel.playerLabelsFlow.collect { playerLabels ->
-                    binding.layoutPlayerLabel.removeAllViews()
-                    playerLabels.forEach { playerLabel ->
-                        binding.layoutPlayerLabel.addView(createTextView(playerLabel))
-                    }
-                }
-            }
-            // Result Labels
-            launch {
-                viewModel.gameResultLabelsFlow.collect { gameResults ->
-                    binding.layoutGameResultLabel.removeAllViews()
-                    gameResults.forEach { gameResultLabel ->
-                        binding.layoutGameResultLabel.addView(createTextView(gameResultLabel))
-                    }
-                }
-            }
-            // Vertical Lines
-            launch {
-                viewModel.verticalLinesFlow.collect { binding.ladderView.updateVerticalLines(it) }
-            }
-            // Horizontal Lines
-            launch {
-                viewModel.horizontalLinesFlow.collect { binding.ladderView.updateHorizontalLines(it) }
-            }
-            // Ladder Routes
-            launch {
-                viewModel.ladderRoutesFlow.collect { ladderRoutes ->
-                    with(binding.ladderRoutesView) {
-                        if (ladderRoutes.isNotEmpty()) {
-                            initView(ladderRoutes)
-                            animator.start()
-                        } else {
-                            resetView()
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Player Labels
+                launch {
+                    viewModel.playerLabelsFlow.collect { playerLabels ->
+                        binding.layoutPlayerLabel.removeAllViews()
+                        playerLabels.forEach { playerLabel ->
+                            binding.layoutPlayerLabel.addView(createTextView(playerLabel))
                         }
                     }
                 }
-            }
-            // Start Button
-            launch {
-                viewModel.startButtonStateFlow.collect {
-                    binding.buttonStart.isEnabled = it
-                }
-            }
-            // Result Blind
-            launch {
-                viewModel.resultBlindStateFlow.collect {
-                    if (it) {
-                        binding.textViewBlind.visibility = View.VISIBLE
-                    } else {
-                        binding.textViewBlind.visibility = View.GONE
+                // Result Labels
+                launch {
+                    viewModel.gameResultLabelsFlow.collect { gameResults ->
+                        binding.layoutGameResultLabel.removeAllViews()
+                        gameResults.forEach { gameResultLabel ->
+                            binding.layoutGameResultLabel.addView(createTextView(gameResultLabel))
+                        }
                     }
                 }
-            }
-            // Game Playing Message
-            launch {
-                viewModel.gameStateMessageFlow.collect {
-                    Toast.makeText(
-                        this@MainActivity,
-                        getString(R.string.label_game_playing_message),
-                        Toast.LENGTH_SHORT
-                    ).show()
+                // Vertical Lines
+                launch {
+                    viewModel.verticalLinesFlow.collect { binding.ladderView.updateVerticalLines(it) }
                 }
-            }
-            // Move to Setting Activity
-            launch {
-                viewModel.moveToSettingPageFlow.collect {
-                    startActivity(SettingActivity.buildIntent(this@MainActivity))
+                // Horizontal Lines
+                launch {
+                    viewModel.horizontalLinesFlow.collect { binding.ladderView.updateHorizontalLines(it) }
+                }
+                // Ladder Routes
+                launch {
+                    viewModel.ladderRoutesFlow.collect { ladderRoutes ->
+                        with(binding.ladderRoutesView) {
+                            if (ladderRoutes.isNotEmpty()) {
+                                initView(ladderRoutes)
+                                animator.start()
+                            } else {
+                                resetView()
+                            }
+                        }
+                    }
+                }
+                // Start Button
+                launch {
+                    viewModel.startButtonStateFlow.collect {
+                        binding.buttonStart.isEnabled = it
+                    }
+                }
+                // Result Blind
+                launch {
+                    viewModel.resultBlindStateFlow.collect {
+                        if (it) {
+                            binding.textViewBlind.visibility = View.VISIBLE
+                        } else {
+                            binding.textViewBlind.visibility = View.GONE
+                        }
+                    }
+                }
+                // Game Playing Message
+                launch {
+                    viewModel.gameStateMessageFlow.collect {
+                        Toast.makeText(
+                            this@MainActivity,
+                            getString(R.string.label_game_playing_message),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                // Move to Setting Activity
+                launch {
+                    viewModel.moveToSettingPageFlow.collect {
+                        startActivity(SettingActivity.buildIntent(this@MainActivity))
+                    }
                 }
             }
         }
