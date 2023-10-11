@@ -18,8 +18,8 @@ class MainViewModel(
     private val ladderGameRepository: LadderGameRepository
 ) : ViewModel() {
 
-    private val _playerLabelsFlow = MutableStateFlow<List<String>>(emptyList())
-    val playerLabelsFlow get() = _playerLabelsFlow.asStateFlow()
+    private val _playersFlow = MutableStateFlow<List<String>>(emptyList())
+    val playerLabelsFlow get() = _playersFlow.asStateFlow()
 
     private val _gameResults = MutableStateFlow<List<String>>(emptyList())
     val gameResultLabelsFlow get() = _gameResults.asStateFlow()
@@ -94,7 +94,7 @@ class MainViewModel(
     }
 
     private fun initGame(playerCount: Int, ladderViewSize: Pair<Float, Float>) {
-        initGamePlayerLabels(playerCount)
+        initGamePlayers(playerCount)
         initGameResults()
         initLadderMatrix(ladderViewSize.first, ladderViewSize.second)
         initLadderPathMatrix()
@@ -114,27 +114,27 @@ class MainViewModel(
         setResultBlindState(true)
     }
 
-    private fun initGamePlayerLabels(playerCount: Int) {
+    private fun initGamePlayers(playerCount: Int) {
         (1..playerCount)
             .map { number ->"$LABEL_PLAYER$number" }
-            .let { playerLabels -> _playerLabelsFlow.update { playerLabels } }
+            .let { playerLabels -> _playersFlow.update { playerLabels } }
     }
 
     private fun initGameResults() {
-        val resultIndex = (0 until _playerLabelsFlow.value.size).random()
-        (0 until _playerLabelsFlow.value.size).map { index ->
+        val resultIndex = (0 until _playersFlow.value.size).random()
+        (0 until _playersFlow.value.size).map { index ->
             if (index == resultIndex) LABEL_WIN else LABEL_LOSE
-        }.let {
-            _gameResults.update { it }
+        }.let { results ->
+            _gameResults.update { results }
         }
     }
 
     private fun initLadderMatrix(width: Float, height: Float) {
         val lastPosition = HORIZONTAL_LINE_COUNT + 2
-        val sectionWidth = width / _playerLabelsFlow.value.size
+        val sectionWidth = width / _playersFlow.value.size
         val sectionHeight = height / HORIZONTAL_LINE_COUNT
         (0 until lastPosition).map { y ->
-            (0 until _playerLabelsFlow.value.size).map { x ->
+            (0 until _playersFlow.value.size).map { x ->
                 val xScale = (sectionWidth * (x + 1) + sectionWidth * x) / 2
                 val yScale = when {
                     // 출발 지점
@@ -155,9 +155,9 @@ class MainViewModel(
     private fun initLadderPathMatrix() {
         val randomIndices = getRandomIndices()
         val ladderPathMatrix = MutableList(HORIZONTAL_LINE_COUNT + 2) {
-            MutableList(_playerLabelsFlow.value.size) { Direction.DOWN }
+            MutableList(_playersFlow.value.size) { Direction.DOWN }
         }
-        (0 until _playerLabelsFlow.value.size - 1).forEach { x ->
+        (0 until _playersFlow.value.size - 1).forEach { x ->
             randomIndices[x].forEach { y ->
                 ladderPathMatrix[y][x] = Direction.RIGHT_DOWN
                 ladderPathMatrix[y][x + 1] = Direction.LEFT_DOWN
@@ -169,7 +169,7 @@ class MainViewModel(
 
     private fun getRandomIndices(): List<List<Int>> {
         val randomIndices = mutableListOf<List<Int>>()
-        (0 until _playerLabelsFlow.value.size - 1).forEach { index ->
+        (0 until _playersFlow.value.size - 1).forEach { index ->
             val availableIndices = (1..HORIZONTAL_LINE_COUNT).toMutableList()
             if (index > 0) {
                 randomIndices[index - 1].forEach { value ->
@@ -187,7 +187,7 @@ class MainViewModel(
     }
 
     private fun initVerticalLines() {
-        (0 until _playerLabelsFlow.value.size).map { index ->
+        (0 until _playersFlow.value.size).map { index ->
             val startMatrix = _ladderMatrix.first()
             val endMatrix = _ladderMatrix.last()
             Ladder(
@@ -222,7 +222,7 @@ class MainViewModel(
     }
 
     private fun generateLadderRoutes() {
-        (0 until _playerLabelsFlow.value.size).map { index ->
+        (0 until _playersFlow.value.size).map { index ->
             var y = 0
             var x = index
             val paths = mutableListOf<Pair<Float, Float>>()
