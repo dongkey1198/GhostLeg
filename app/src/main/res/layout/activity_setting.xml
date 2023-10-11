@@ -24,11 +24,11 @@
         android:id="@+id/buttonDecrement"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="@id/textViewPlayerCount"
-        app:layout_constraintStart_toStartOf="parent"
-        android:textAlignment="center"
         android:text="@string/label_button_minus"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="@id/textViewPlayerCount"
         app:layout_constraintEnd_toStartOf="@id/textViewPlayerCount"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/textViewPlayerCount" />
 
     <TextView
@@ -40,8 +40,8 @@
         android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/buttonIncrement"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/buttonIncrement"
         app:layout_constraintStart_toEndOf="@id/buttonDecrement"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -54,14 +54,26 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/textViewPlayerCount"
         app:layout_constraintTop_toTopOf="@id/textViewPlayerCount" />
-    
+
     <Button
+        android:id="@+id/buttonSave"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:text="@string/label_button_save"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/buttonClose"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/buttonClose"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
         android:text="@string/label_button_close"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/buttonSave" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

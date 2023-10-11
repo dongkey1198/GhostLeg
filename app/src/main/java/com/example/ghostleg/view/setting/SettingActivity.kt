@@ -25,6 +25,7 @@ class SettingActivity : AppCompatActivity() {
         setContentView(binding.root)
         initDecrementButton()
         intiIncrementButton()
+        initCloseButton()
         setObservers()
     }
 
@@ -37,6 +38,12 @@ class SettingActivity : AppCompatActivity() {
     private fun intiIncrementButton() {
         binding.buttonIncrement.setOnClickListener {
             viewModel.incrementButtonClicked()
+        }
+    }
+
+    private fun initCloseButton() {
+        binding.buttonClose.setOnClickListener {
+            finish()
         }
     }
 
