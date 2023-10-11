@@ -10,7 +10,7 @@ import android.util.AttributeSet
 import android.view.View
 import com.example.ghostleg.data.model.LadderRoute
 
-class LadderRoutesView(context: Context, attr: AttributeSet?) : View(context, attr) {
+class LadderPathView(context: Context, attr: AttributeSet?) : View(context, attr) {
 
     private val _ladderRoutes = mutableListOf<LadderRoute>()
     private var _percentage = 0f
