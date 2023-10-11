@@ -25,6 +25,7 @@ class SettingActivity : AppCompatActivity() {
         setContentView(binding.root)
         initDecrementButton()
         intiIncrementButton()
+        initSaveButton()
         initCloseButton()
         setObservers()
     }
@@ -41,9 +42,15 @@ class SettingActivity : AppCompatActivity() {
         }
     }
 
+    private fun initSaveButton() {
+        binding.buttonSave.setOnClickListener {
+            viewModel.saveButtonClicked()
+        }
+    }
+
     private fun initCloseButton() {
         binding.buttonClose.setOnClickListener {
-            finish()
+            viewModel.closeButtonClicked()
         }
     }
 
@@ -61,6 +68,11 @@ class SettingActivity : AppCompatActivity() {
                         getString(R.string.label_player_count_limit_message),
                         Toast.LENGTH_SHORT
                     ).show()
+                }
+            }
+            launch {
+                viewModel.pageCloseFlow.collect {
+                    if (it) finish()
                 }
             }
         }

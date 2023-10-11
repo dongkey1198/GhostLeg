@@ -21,6 +21,9 @@ class SettingViewModel(
     private val _playerLimitMessageFlow = MutableSharedFlow<Unit>()
     val playerLimitMessageFlow get() = _playerLimitMessageFlow.asSharedFlow()
 
+    private val _pageCloseFlow = MutableStateFlow<Boolean>(false)
+    val pageCloseFlow get() = _pageCloseFlow.asStateFlow()
+
     private var _previousPlayerCount = 0
 
     init {
@@ -31,7 +34,7 @@ class SettingViewModel(
         if (_playerCountFlow.value > 2) {
             _playerCountFlow.update { _playerCountFlow.value - 1 }
         } else {
-            updateRangeMessageFlow()
+            updatePlayerLimitMessageFlow()
         }
     }
 
@@ -39,13 +42,20 @@ class SettingViewModel(
         if (_playerCountFlow.value < 10) {
             _playerCountFlow.update { _playerCountFlow.value + 1 }
         } else {
-            updateRangeMessageFlow()
+            updatePlayerLimitMessageFlow()
         }
     }
 
-    private fun updateRangeMessageFlow() {
-        viewModelScope.launch(Dispatchers.Default) {
-            _playerLimitMessageFlow.emit(Unit)
+    fun closeButtonClicked() {
+        updatePageCloseFlow()
+    }
+
+    fun saveButtonClicked() {
+        if (_playerCountFlow.value == _previousPlayerCount) {
+            updatePageCloseFlow()
+        } else {
+            setPlayerCount(_playerCountFlow.value)
+            updatePageCloseFlow()
         }
     }
 
@@ -55,5 +65,21 @@ class SettingViewModel(
             _previousPlayerCount = playerCount
             _playerCountFlow.update { playerCount }
         }
+    }
+
+    private fun setPlayerCount(playerCount: Int) {
+        viewModelScope.launch(Dispatchers.Default) {
+            ladderGameRepository.setPlayerCount(playerCount)
+        }
+    }
+
+    private fun updatePlayerLimitMessageFlow() {
+        viewModelScope.launch(Dispatchers.Default) {
+            _playerLimitMessageFlow.emit(Unit)
+        }
+    }
+
+    private fun updatePageCloseFlow() {
+        _pageCloseFlow.update { true }
     }
 }
