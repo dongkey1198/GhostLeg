@@ -5,5 +5,9 @@
     <string name="label_button_reset">초기화</string>
     <string name="label_button_setting">설정</string>
     <string name="label_question_mark">\?</string>
+    <string name="label_button_plus">Plus</string>
+    <string name="label_button_minus">MINUS</string>
+    <string name="label_button_close">닫기</string>
+    <string name="label_setting">설정</string>
     <string name="label_game_playing_message">현재 게임 진행 중 입니다.</string>
 </resources>
