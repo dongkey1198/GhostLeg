@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         initGame()
         initStartButton()
         initResetButton()
+        initSettingButton()
         setObservers()
     }
 
@@ -68,6 +69,10 @@ class MainActivity : AppCompatActivity() {
         binding.buttonReset.setOnClickListener {
             viewModel.resetGame()
         }
+    }
+
+    private fun initSettingButton() {
+
     }
 
     private fun setObservers() {
