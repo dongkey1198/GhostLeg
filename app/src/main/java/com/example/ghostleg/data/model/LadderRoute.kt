@@ -1,4 +1,4 @@
-package com.example.ghostleg.model
+package com.example.ghostleg.data.model
 
 import android.graphics.Color
 import kotlin.random.Random

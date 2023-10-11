@@ -1,11 +1,11 @@
-package com.example.ghostleg.view.custom
+package com.example.ghostleg.view.main.custom
 
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
-import com.example.ghostleg.model.Line
+import com.example.ghostleg.data.model.Line
 
 class LadderView(context: Context, attr: AttributeSet?) : View(context, attr) {
 
