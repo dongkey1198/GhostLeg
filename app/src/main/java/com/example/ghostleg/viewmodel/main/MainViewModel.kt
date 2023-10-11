@@ -52,12 +52,11 @@ class MainViewModel(
 
     init {
         viewModelScope.launch(Dispatchers.Default) {
-            combine(
-                ladderGameRepository.playerCount,
-                _ladderViewSizeFlow
-            ) { playerCount, ladderViewSize ->
+            combine(ladderGameRepository.playerCount, _ladderViewSizeFlow) { playerCount, ladderViewSize ->
                 Pair(playerCount, ladderViewSize)
-            }.collect { (playerCount, ladderViewSize) -> initGame(playerCount, ladderViewSize) }
+            }.collect { (playerCount, ladderViewSize) ->
+                initGame(playerCount, ladderViewSize)
+            }
         }
     }
 
@@ -68,7 +67,7 @@ class MainViewModel(
     fun startButtonClicked() {
         setIsPlaying(true)
         setStartButtonState(false)
-        generateRoutes()
+        generateLadderRoutes()
     }
 
     fun gameEnded() {
@@ -223,39 +222,38 @@ class MainViewModel(
         _horizontalLinesFlow.update { horizontalLines }
     }
 
-    private fun generateRoutes() {
+    private fun generateLadderRoutes() {
         (0 until _playerLabelsFlow.value.size).map { index ->
             var y = 0
             var x = index
-            val pathScales = mutableListOf<Pair<Float, Float>>()
-            pathScales.add(getRoute(y, x))
+            val paths = mutableListOf<Pair<Float, Float>>()
             do {
                 when (_randomLineMatrix[y][x]) {
                     // 오른쪽 이동 + 한칸 아래 이동
                     1 -> {
-                        pathScales.add(getRoute(y, ++x))
-                        pathScales.add(getRoute(++y, x))
+                        paths.add(getPath(y, x++))
+                        paths.add(getPath(y++, x))
                     }
                     // 왼쪽 이동 + 한칸 아래 이동
                     2 -> {
-                        pathScales.add(getRoute(y, --x))
-                        pathScales.add(getRoute(++y, x))
+                        paths.add(getPath(y, x--))
+                        paths.add(getPath(y++, x))
                     }
                     // 한칸 아래 이동
                     else -> {
-                        pathScales.add(getRoute(++y, x))
+                        paths.add(getPath(y++, x))
                     }
                 }
-            } while (y < HORIZONTAL_LINE_COUNT + 1)
-            pathScales
-        }.map { pathScale ->
-            LadderRoute(pathScales = pathScale)
-        }.let { ladderRoutes ->
-            setLadderRoutes(ladderRoutes)
+            } while (y < HORIZONTAL_LINE_COUNT + 2)
+            paths
+        }.map {
+            LadderRoute(pathScales = it)
+        }.let {
+            setLadderRoutes(it)
         }
     }
 
-    private fun getRoute(i: Int, j: Int): Pair<Float, Float> {
+    private fun getPath(i: Int, j: Int): Pair<Float, Float> {
         val scales = _ladderMatrix[i][j]
         return Pair(scales.first, scales.second)
     }
