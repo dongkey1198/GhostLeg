@@ -47,7 +47,7 @@ class MainViewModel(
 
     private val _ladderViewSizeFlow = MutableStateFlow<Pair<Float, Float>>(Pair(0f, 0f))
     private val _ladderMatrix = mutableListOf<List<Pair<Float, Float>>>()
-    private val _randomLineMatrix = mutableListOf<List<Int>>()
+    private val _randomLineMatrix = mutableListOf<MutableList<Direction>>()
     private var _isPlaying = false
 
     init {
@@ -154,18 +154,17 @@ class MainViewModel(
 
     private fun initRandomLineMatrix() {
         val randomIndices = getRandomIndices()
-        val horizontalLineMatrix =
-            Array(HORIZONTAL_LINE_COUNT + 2) { IntArray(_playerLabelsFlow.value.size) }
+        val horizontalLineMatrix = MutableList(HORIZONTAL_LINE_COUNT + 2) {
+            MutableList(_playerLabelsFlow.value.size) { Direction.DOWN }
+        }
         (0 until _playerLabelsFlow.value.size - 1).forEach { x ->
             randomIndices[x].forEach { y ->
-                horizontalLineMatrix[y][x] = 1
-                horizontalLineMatrix[y][x + 1] = 2
+                horizontalLineMatrix[y][x] = Direction.RIGHT_DOWN
+                horizontalLineMatrix[y][x + 1] = Direction.LEFT_DOWN
             }
         }
-        horizontalLineMatrix.map { it.toList() }.let { randomLineMatrix ->
-            _randomLineMatrix.clear()
-            _randomLineMatrix.addAll(randomLineMatrix)
-        }
+        _randomLineMatrix.clear()
+        _randomLineMatrix.addAll(horizontalLineMatrix)
     }
 
     private fun getRandomIndices(): List<List<Int>> {
@@ -206,7 +205,7 @@ class MainViewModel(
         val horizontalLines = mutableListOf<Line>()
         (1 until _randomLineMatrix.size - 1).forEach { y ->
             (0 until _randomLineMatrix[y].size - 1).forEach { x ->
-                if (_randomLineMatrix[y][x] == 1) {
+                if (_randomLineMatrix[y][x] == Direction.RIGHT_DOWN) {
                     val startMatrix = _ladderMatrix[y][x]
                     val endMatrix = _ladderMatrix[y][x + 1]
                     val line = Line(
@@ -229,18 +228,15 @@ class MainViewModel(
             val paths = mutableListOf<Pair<Float, Float>>()
             do {
                 when (_randomLineMatrix[y][x]) {
-                    // 오른쪽 이동 + 한칸 아래 이동
-                    1 -> {
+                    Direction.DOWN -> {
+                        paths.add(getPath(y++, x))
+                    }
+                    Direction.RIGHT_DOWN -> {
                         paths.add(getPath(y, x++))
                         paths.add(getPath(y++, x))
                     }
-                    // 왼쪽 이동 + 한칸 아래 이동
-                    2 -> {
+                    Direction.LEFT_DOWN -> {
                         paths.add(getPath(y, x--))
-                        paths.add(getPath(y++, x))
-                    }
-                    // 한칸 아래 이동
-                    else -> {
                         paths.add(getPath(y++, x))
                     }
                 }
@@ -278,6 +274,12 @@ class MainViewModel(
 
     private fun setIsPlaying(isPlaying: Boolean = false) {
         _isPlaying = isPlaying
+    }
+
+    private enum class Direction {
+        DOWN,
+        RIGHT_DOWN,
+        LEFT_DOWN
     }
 
     companion object {
