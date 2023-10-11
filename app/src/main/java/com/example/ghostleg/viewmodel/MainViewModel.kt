@@ -1,11 +1,17 @@
 package com.example.ghostleg.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.ghostleg.R
 import com.example.ghostleg.model.Line
-import com.example.ghostleg.model.Route
+import com.example.ghostleg.model.LadderRoute
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
 
@@ -21,12 +27,22 @@ class MainViewModel : ViewModel() {
     private val _horizontalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val horizontalLinesFlow get() = _horizontalLinesFlow.asStateFlow()
 
-    private val _ladderRoutesFlow = MutableStateFlow<List<List<Route>>>(emptyList())
+    private val _ladderRoutesFlow = MutableStateFlow<List<LadderRoute>>(emptyList())
     val ladderRoutesFlow get() = _ladderRoutesFlow.asStateFlow()
+
+    private val _startButtonStateFlow = MutableStateFlow<Boolean>(true)
+    val startButtonStateFlow get() = _startButtonStateFlow.asStateFlow()
+
+    private val _resultBlindStateFlow = MutableStateFlow<Boolean>(true)
+    val resultBlindStateFlow get() = _resultBlindStateFlow.asStateFlow()
+
+    private val _gameStateMessageFlow = MutableSharedFlow<Int>()
+    val gameStateMessageFlow get() = _gameStateMessageFlow.asSharedFlow()
 
     private val _ladderMatrix = mutableListOf<List<Pair<Float, Float>>>()
     private val _randomLineMatrix = mutableListOf<List<Int>>()
     private var _playerNumbers = 6
+    private var _isPlaying = false
 
     fun initGame() {
         initGamePlayers()
@@ -40,14 +56,28 @@ class MainViewModel : ViewModel() {
         initHorizontalLines()
     }
 
-    fun resetGame() {
-        initGameResult()
-        initRandomLineMatrix()
-        initHorizontalLines()
+    fun startGame() {
+        updateIsPlaying(true)
+        updateStartButtonState(false)
+        findRoutes()
     }
 
-    fun startGame() {
-        findRoutes()
+    fun endGame() {
+        updateIsPlaying(false)
+        updateResultBlindState(false)
+    }
+
+    fun resetGame() {
+        if (_isPlaying) {
+            updateGameStateMessageFlow()
+        } else {
+            initGameResult()
+            initRandomLineMatrix()
+            initHorizontalLines()
+            updateLadderRoutes(emptyList())
+            updateStartButtonState(true)
+            updateResultBlindState(true)
+        }
     }
 
     private fun initGamePlayers() {
@@ -82,7 +112,7 @@ class MainViewModel : ViewModel() {
                     // 출발 지점
                     y == 0 -> 0f
                     // 중간 지점
-                    y < lastPosition -> (sectionHeight * y + sectionHeight * (y - 1)) / 2
+                    y < lastPosition - 1 -> (sectionHeight * y + sectionHeight * (y - 1)) / 2
                     // 도착 지점
                     else -> height
                 }
@@ -154,38 +184,62 @@ class MainViewModel : ViewModel() {
     }
 
     private fun findRoutes() {
-        val ladderRoutes = mutableListOf<List<Route>>()
-        (0 until _playerNumbers).forEach { index ->
+        (0 until _playerNumbers).map { index ->
             var y = 0
             var x = index
-            val routes = mutableListOf<Route>()
+            val pathScales = mutableListOf<Pair<Float, Float>>()
+            pathScales.add(getRoute(y, x))
             do {
                 when(_randomLineMatrix[y][x]) {
                     // 오른쪽 이동 + 한칸 아래 이동
                     1 -> {
-                        routes.add(getRoute(y, x, y, ++x))
-                        routes.add(getRoute(y, x, ++y, x))
+                        pathScales.add(getRoute(y, ++x))
+                        pathScales.add(getRoute(++y, x))
                     }
                     // 왼쪽 이동 + 한칸 아래 이동
                     2-> {
-                        routes.add(getRoute(y, x, y, --x))
-                        routes.add(getRoute(y, x, ++y, x))
+                        pathScales.add(getRoute(y, --x))
+                        pathScales.add(getRoute(++y, x))
                     }
                     // 한칸 아래 이동
                     else -> {
-                        routes.add(getRoute(y, x, ++y, x))
+                        pathScales.add(getRoute(++y, x))
                     }
                 }
             } while (y < HORIZONTAL_LINE_SECTIONS + 1)
-            ladderRoutes.add(routes)
+            pathScales
+        }.map { pathScale ->
+            LadderRoute(pathScales = pathScale)
+        }.let { ladderRoutes ->
+            updateLadderRoutes(ladderRoutes)
         }
+    }
+
+    private fun getRoute(i: Int, j: Int): Pair<Float, Float> {
+        val scales = _ladderMatrix[i][j]
+        return Pair(scales.first, scales.second)
+    }
+
+    private fun updateLadderRoutes(ladderRoutes: List<LadderRoute>) {
         _ladderRoutesFlow.update { ladderRoutes }
     }
 
-    private fun getRoute(i: Int, j: Int, k: Int, l: Int): Route {
-        val startScale = _ladderMatrix[i][j]
-        val endScale = _ladderMatrix[k][l]
-        return Route(startScale, endScale)
+    private fun updateGameStateMessageFlow() {
+        viewModelScope.launch(Dispatchers.Default) {
+            _gameStateMessageFlow.emit(R.string.label_game_playing_message)
+        }
+    }
+
+    private fun updateStartButtonState(isShow: Boolean) {
+        _startButtonStateFlow.update { isShow }
+    }
+
+    private fun updateResultBlindState(isShow: Boolean = false) {
+        _resultBlindStateFlow.update { isShow }
+    }
+
+    private fun updateIsPlaying(isPlaying: Boolean = false) {
+        _isPlaying = isPlaying
     }
 
     companion object {
