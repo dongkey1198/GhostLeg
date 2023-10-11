@@ -21,8 +21,8 @@ class MainViewModel(
     private val _playerLabelsFlow = MutableStateFlow<List<String>>(emptyList())
     val playerLabelsFlow get() = _playerLabelsFlow.asStateFlow()
 
-    private val _gameResultLabelsFlow = MutableStateFlow<List<String>>(emptyList())
-    val gameResultLabelsFlow get() = _gameResultLabelsFlow.asStateFlow()
+    private val _gameResults = MutableStateFlow<List<String>>(emptyList())
+    val gameResultLabelsFlow get() = _gameResults.asStateFlow()
 
     private val _verticalLinesFlow = MutableStateFlow<List<Ladder>>(emptyList())
     val verticalLinesFlow get() = _verticalLinesFlow.asStateFlow()
@@ -94,8 +94,8 @@ class MainViewModel(
     }
 
     private fun initGame(playerCount: Int, ladderViewSize: Pair<Float, Float>) {
-        initGamePlayerLabels(playerCount)
-        initGameResultLabels()
+        initGamePlayers(playerCount)
+        initGameResults()
         initLadderMatrix(ladderViewSize.first, ladderViewSize.second)
         initLadderPathMatrix()
         initVerticalLines()
@@ -106,7 +106,7 @@ class MainViewModel(
     }
 
     private fun resetGame() {
-        initGameResultLabels()
+        initGameResults()
         initLadderPathMatrix()
         initHorizontalLines()
         setLadderRoutes(emptyList())
@@ -114,18 +114,18 @@ class MainViewModel(
         setResultBlindState(true)
     }
 
-    private fun initGamePlayerLabels(playerCount: Int) {
+    private fun initGamePlayers(playerCount: Int) {
         (1..playerCount)
-            .map { index -> "$LABEL_PLAYER$index" }
-            .let { playerLabels -> _playerLabelsFlow.update { playerLabels } }
+            .map { "$LABEL_PLAYER$it" }
+            .let { _playerLabelsFlow.update { it } }
     }
 
-    private fun initGameResultLabels() {
+    private fun initGameResults() {
         val resultIndex = (0 until _playerLabelsFlow.value.size).random()
         (0 until _playerLabelsFlow.value.size).map { index ->
             if (index == resultIndex) LABEL_WIN else LABEL_LOSE
-        }.let { gameResultLabels ->
-            _gameResultLabelsFlow.update { gameResultLabels }
+        }.let {
+            _gameResults.update { it }
         }
     }
 
