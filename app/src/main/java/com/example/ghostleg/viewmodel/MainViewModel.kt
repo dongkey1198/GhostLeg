@@ -1,11 +1,17 @@
 package com.example.ghostleg.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.ghostleg.R
 import com.example.ghostleg.model.Line
 import com.example.ghostleg.model.LadderRoute
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
 
@@ -30,9 +36,13 @@ class MainViewModel : ViewModel() {
     private val _resultBlindStateFlow = MutableStateFlow<Boolean>(true)
     val resultBlindStateFlow get() = _resultBlindStateFlow.asStateFlow()
 
+    private val _gameStateMessageFlow = MutableSharedFlow<Int>()
+    val gameStateMessageFlow get() = _gameStateMessageFlow.asSharedFlow()
+
     private val _ladderMatrix = mutableListOf<List<Pair<Float, Float>>>()
     private val _randomLineMatrix = mutableListOf<List<Int>>()
     private var _playerNumbers = 6
+    private var _isPlaying = false
 
     fun initGame() {
         initGamePlayers()
@@ -47,15 +57,20 @@ class MainViewModel : ViewModel() {
     }
 
     fun resetGame() {
-        initGameResult()
-        initRandomLineMatrix()
-        initHorizontalLines()
-        updateLadderRoutes(emptyList())
-        updateStartButtonState(true)
-        updateResultBlindState(true)
+        if (_isPlaying) {
+            updateGameStateMessageFlow()
+        } else {
+            initGameResult()
+            initRandomLineMatrix()
+            initHorizontalLines()
+            updateLadderRoutes(emptyList())
+            updateStartButtonState(true)
+            updateResultBlindState(true)
+        }
     }
 
     fun startGame() {
+        updateIsPlaying(true)
         findRoutes()
     }
 
@@ -65,6 +80,10 @@ class MainViewModel : ViewModel() {
 
     fun updateResultBlindState(isShow: Boolean = false) {
         _resultBlindStateFlow.update { isShow }
+    }
+
+    fun updateIsPlaying(isPlaying: Boolean = false) {
+        _isPlaying = isPlaying
     }
 
     private fun initGamePlayers() {
@@ -209,6 +228,12 @@ class MainViewModel : ViewModel() {
 
     private fun updateLadderRoutes(ladderRoutes: List<LadderRoute>) {
         _ladderRoutesFlow.update { ladderRoutes }
+    }
+
+    private fun updateGameStateMessageFlow() {
+        viewModelScope.launch(Dispatchers.Default) {
+            _gameStateMessageFlow.emit(R.string.label_game_playing_message)
+        }
     }
 
     companion object {

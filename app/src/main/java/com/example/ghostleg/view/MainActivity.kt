@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.ghostleg.databinding.ActivityMainBinding
@@ -25,13 +26,14 @@ class MainActivity : AppCompatActivity() {
     private val animator by lazy {
         ObjectAnimator.ofFloat(binding.ladderRoutesView, ANIMATION_PROPERTY, 0.0f, 1.0f)
             .apply {
-                duration = 3000L
+                duration = 9000L
                 addListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationStart(animation: Animator) {
                         viewModel.updateStartButtonState()
                     }
 
                     override fun onAnimationEnd(animation: Animator) {
+                        viewModel.updateIsPlaying()
                         viewModel.updateResultBlindState()
                     }
                 })
@@ -133,6 +135,7 @@ class MainActivity : AppCompatActivity() {
                             animator.start()
                         } else {
                             resetView()
+                            // 지워야함..
                             animator.cancel()
                         }
                     }
@@ -152,6 +155,12 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         binding.textViewBlind.visibility = View.GONE
                     }
+                }
+            }
+            // Game Playing Message
+            launch {
+                viewModel.gameStateMessageFlow.collect {
+                   Toast.makeText(this@MainActivity, getString(it), Toast.LENGTH_SHORT).show()
                 }
             }
         }
