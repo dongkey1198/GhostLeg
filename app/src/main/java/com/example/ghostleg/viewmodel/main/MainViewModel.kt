@@ -94,7 +94,7 @@ class MainViewModel(
     }
 
     private fun initGame(playerCount: Int, ladderViewSize: Pair<Float, Float>) {
-        initGamePlayers(playerCount)
+        initGamePlayerLabels(playerCount)
         initGameResults()
         initLadderMatrix(ladderViewSize.first, ladderViewSize.second)
         initLadderPathMatrix()
@@ -114,10 +114,10 @@ class MainViewModel(
         setResultBlindState(true)
     }
 
-    private fun initGamePlayers(playerCount: Int) {
+    private fun initGamePlayerLabels(playerCount: Int) {
         (1..playerCount)
-            .map { "$LABEL_PLAYER$it" }
-            .let { _playerLabelsFlow.update { it } }
+            .map { number ->"$LABEL_PLAYER$number" }
+            .let { playerLabels -> _playerLabelsFlow.update { playerLabels } }
     }
 
     private fun initGameResults() {
