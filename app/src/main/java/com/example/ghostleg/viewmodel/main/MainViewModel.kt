@@ -2,7 +2,7 @@ package com.example.ghostleg.viewmodel.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ghostleg.data.model.Line
+import com.example.ghostleg.data.model.Ladder
 import com.example.ghostleg.data.model.LadderRoute
 import com.example.ghostleg.data.repository.LadderGameRepository
 import kotlinx.coroutines.Dispatchers
@@ -24,10 +24,10 @@ class MainViewModel(
     private val _gameResultLabelsFlow = MutableStateFlow<List<String>>(emptyList())
     val gameResultLabelsFlow get() = _gameResultLabelsFlow.asStateFlow()
 
-    private val _verticalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
+    private val _verticalLinesFlow = MutableStateFlow<List<Ladder>>(emptyList())
     val verticalLinesFlow get() = _verticalLinesFlow.asStateFlow()
 
-    private val _horizontalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
+    private val _horizontalLinesFlow = MutableStateFlow<List<Ladder>>(emptyList())
     val horizontalLinesFlow get() = _horizontalLinesFlow.asStateFlow()
 
     private val _ladderRoutesFlow = MutableStateFlow<List<LadderRoute>>(emptyList())
@@ -94,8 +94,8 @@ class MainViewModel(
     }
 
     private fun initGame(playerCount: Int, ladderViewSize: Pair<Float, Float>) {
-        initGamePlayers(playerCount)
-        initGameResult()
+        initGamePlayerLabels(playerCount)
+        initGameResultLabels()
         initLadderMatrix(ladderViewSize.first, ladderViewSize.second)
         initLadderPathMatrix()
         initVerticalLines()
@@ -106,7 +106,7 @@ class MainViewModel(
     }
 
     private fun resetGame() {
-        initGameResult()
+        initGameResultLabels()
         initLadderPathMatrix()
         initHorizontalLines()
         setLadderRoutes(emptyList())
@@ -114,13 +114,13 @@ class MainViewModel(
         setResultBlindState(true)
     }
 
-    private fun initGamePlayers(playerCount: Int) {
+    private fun initGamePlayerLabels(playerCount: Int) {
         (1..playerCount)
             .map { index -> "$LABEL_PLAYER$index" }
             .let { playerLabels -> _playerLabelsFlow.update { playerLabels } }
     }
 
-    private fun initGameResult() {
+    private fun initGameResultLabels() {
         val resultIndex = (0 until _playerLabelsFlow.value.size).random()
         (0 until _playerLabelsFlow.value.size).map { index ->
             if (index == resultIndex) LABEL_WIN else LABEL_LOSE
@@ -190,7 +190,7 @@ class MainViewModel(
         (0 until _playerLabelsFlow.value.size).map { index ->
             val startMatrix = _ladderMatrix.first()
             val endMatrix = _ladderMatrix.last()
-            Line(
+            Ladder(
                 startMatrix[index].first,
                 startMatrix[index].second,
                 endMatrix[index].first,
@@ -202,23 +202,23 @@ class MainViewModel(
     }
 
     private fun initHorizontalLines() {
-        val horizontalLines = mutableListOf<Line>()
+        val horizontalLadders = mutableListOf<Ladder>()
         (1 until _ladderPathMatrix.size - 1).forEach { y ->
             (0 until _ladderPathMatrix[y].size - 1).forEach { x ->
                 if (_ladderPathMatrix[y][x] == Direction.RIGHT_DOWN) {
                     val startMatrix = _ladderMatrix[y][x]
                     val endMatrix = _ladderMatrix[y][x + 1]
-                    val line = Line(
+                    val ladder = Ladder(
                         startMatrix.first,
                         startMatrix.second,
                         endMatrix.first,
                         endMatrix.second
                     )
-                    horizontalLines.add(line)
+                    horizontalLadders.add(ladder)
                 }
             }
         }
-        _horizontalLinesFlow.update { horizontalLines }
+        _horizontalLinesFlow.update { horizontalLadders }
     }
 
     private fun generateLadderRoutes() {
