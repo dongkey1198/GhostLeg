@@ -26,15 +26,10 @@ class MainActivity : AppCompatActivity() {
     private val animator by lazy {
         ObjectAnimator.ofFloat(binding.ladderRoutesView, ANIMATION_PROPERTY, 0.0f, 1.0f)
             .apply {
-                duration = 9000L
+                duration = GAME_PLAYING_DURATION
                 addListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationStart(animation: Animator) {
-                        viewModel.updateStartButtonState()
-                    }
-
                     override fun onAnimationEnd(animation: Animator) {
-                        viewModel.updateIsPlaying()
-                        viewModel.updateResultBlindState()
+                        viewModel.endGame()
                     }
                 })
             }
@@ -166,5 +161,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val ANIMATION_PROPERTY = "percentage"
+        private const val GAME_PLAYING_DURATION = 5000L
     }
 }

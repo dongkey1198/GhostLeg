@@ -56,6 +56,17 @@ class MainViewModel : ViewModel() {
         initHorizontalLines()
     }
 
+    fun startGame() {
+        updateIsPlaying(true)
+        updateStartButtonState(false)
+        findRoutes()
+    }
+
+    fun endGame() {
+        updateIsPlaying(false)
+        updateResultBlindState(false)
+    }
+
     fun resetGame() {
         if (_isPlaying) {
             updateGameStateMessageFlow()
@@ -67,23 +78,6 @@ class MainViewModel : ViewModel() {
             updateStartButtonState(true)
             updateResultBlindState(true)
         }
-    }
-
-    fun startGame() {
-        updateIsPlaying(true)
-        findRoutes()
-    }
-
-    fun updateStartButtonState(isShow: Boolean = false) {
-        _startButtonStateFlow.update { isShow }
-    }
-
-    fun updateResultBlindState(isShow: Boolean = false) {
-        _resultBlindStateFlow.update { isShow }
-    }
-
-    fun updateIsPlaying(isPlaying: Boolean = false) {
-        _isPlaying = isPlaying
     }
 
     private fun initGamePlayers() {
@@ -234,6 +228,18 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.Default) {
             _gameStateMessageFlow.emit(R.string.label_game_playing_message)
         }
+    }
+
+    private fun updateStartButtonState(isShow: Boolean) {
+        _startButtonStateFlow.update { isShow }
+    }
+
+    private fun updateResultBlindState(isShow: Boolean = false) {
+        _resultBlindStateFlow.update { isShow }
+    }
+
+    private fun updateIsPlaying(isPlaying: Boolean = false) {
+        _isPlaying = isPlaying
     }
 
     companion object {
