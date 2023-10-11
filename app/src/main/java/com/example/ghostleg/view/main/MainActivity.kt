@@ -86,40 +86,16 @@ class MainActivity : AppCompatActivity() {
                 viewModel.playerLabelsFlow.collect { playerLabels ->
                     binding.layoutPlayerLabel.removeAllViews()
                     playerLabels.forEach { playerLabel ->
-                        TextView(this@MainActivity).apply {
-                            text = playerLabel
-                            textSize = 16f
-                            gravity = Gravity.CENTER
-                            typeface = Typeface.DEFAULT_BOLD
-                            layoutParams = LayoutParams(
-                                LayoutParams.MATCH_PARENT,
-                                LayoutParams.MATCH_PARENT,
-                                1.0f
-                            )
-                        }.let {
-                            binding.layoutPlayerLabel.addView(it)
-                        }
+                        binding.layoutPlayerLabel.addView(createTextView(playerLabel))
                     }
                 }
             }
             // Result Labels
             launch {
                 viewModel.gameResultLabelsFlow.collect { gameResults ->
-                    binding.layoutGameResult.removeAllViews()
-                    gameResults.forEach { gameResult ->
-                        TextView(this@MainActivity).apply {
-                            text = gameResult
-                            textSize = 16f
-                            gravity = Gravity.CENTER
-                            typeface = Typeface.DEFAULT_BOLD
-                            layoutParams = LayoutParams(
-                                LayoutParams.MATCH_PARENT,
-                                LayoutParams.MATCH_PARENT,
-                                1.0f
-                            )
-                        }.let {
-                            binding.layoutGameResult.addView(it)
-                        }
+                    binding.layoutGameResultLabel.removeAllViews()
+                    gameResults.forEach { gameResultLabel ->
+                        binding.layoutGameResultLabel.addView(createTextView(gameResultLabel))
                     }
                 }
             }
@@ -176,6 +152,20 @@ class MainActivity : AppCompatActivity() {
                     startActivity(SettingActivity.buildIntent(this@MainActivity))
                 }
             }
+        }
+    }
+
+    private fun createTextView(label: String): TextView {
+        return TextView(this@MainActivity).apply {
+            text = label
+            textSize = 12f
+            gravity = Gravity.CENTER
+            typeface = Typeface.DEFAULT_BOLD
+            layoutParams = LayoutParams(
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT,
+                1.0f
+            )
         }
     }
 
