@@ -4,18 +4,51 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.ghostleg.R
+import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.example.ghostleg.databinding.ActivitySettingBinding
+import com.example.ghostleg.viewmodel.setting.SettingViewModel
+import com.example.ghostleg.viewmodel.ViewModelFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class SettingActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivitySettingBinding
+    private val viewModel: SettingViewModel by viewModels { ViewModelFactory(this) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_setting)
+        binding = ActivitySettingBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        initDecrementButton()
+        intiIncrementButton()
+        setObservers()
+    }
+
+    private fun initDecrementButton() {
+        binding.buttonDecrement.setOnClickListener {
+            viewModel.decrementButtonClicked()
+        }
+    }
+
+    private fun intiIncrementButton() {
+        binding.buttonIncrement.setOnClickListener {
+            viewModel.incrementButtonClicked()
+        }
+    }
+
+    private fun setObservers() {
+        lifecycleScope.launch(Dispatchers.Main) {
+            launch {
+                viewModel.playerCountFlow.collect {
+                    binding.textViewPlayerCount.text = it.toString()
+                }
+            }
+        }
     }
 
     companion object {
-
-        const val INTENT_KEY_PLAYER_COUNT = "PLAYER_COUNT"
-
         fun buildIntent(context: Context): Intent {
             return Intent(context, SettingActivity::class.java)
         }
