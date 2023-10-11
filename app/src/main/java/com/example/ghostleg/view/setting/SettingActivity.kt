@@ -4,8 +4,10 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.example.ghostleg.R
 import com.example.ghostleg.databinding.ActivitySettingBinding
 import com.example.ghostleg.viewmodel.setting.SettingViewModel
 import com.example.ghostleg.viewmodel.ViewModelFactory
@@ -43,6 +45,15 @@ class SettingActivity : AppCompatActivity() {
             launch {
                 viewModel.playerCountFlow.collect {
                     binding.textViewPlayerCount.text = it.toString()
+                }
+            }
+            launch {
+                viewModel.playerLimitMessageFlow.collect {
+                    Toast.makeText(
+                        this@SettingActivity,
+                        getString(R.string.label_player_count_limit_message),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
