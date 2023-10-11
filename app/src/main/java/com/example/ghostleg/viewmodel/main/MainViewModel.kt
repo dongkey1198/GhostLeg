@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ghostleg.data.model.Line
 import com.example.ghostleg.data.model.LadderRoute
+import com.example.ghostleg.data.repository.LadderGameRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +13,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel() {
+class MainViewModel(
+    private val ladderGameRepository: LadderGameRepository
+) : ViewModel() {
 
     private val _playerLabelsFlow = MutableStateFlow<List<String>>(emptyList())
     val playerLabelsFlow get() = _playerLabelsFlow.asStateFlow()

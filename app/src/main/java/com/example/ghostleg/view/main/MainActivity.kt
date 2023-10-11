@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.ghostleg.R
 import com.example.ghostleg.databinding.ActivityMainBinding
 import com.example.ghostleg.view.setting.SettingActivity
+import com.example.ghostleg.viewmodel.ViewModelFactory
 import com.example.ghostleg.viewmodel.main.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,7 +25,7 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: MainViewModel by viewModels()
+    private val viewModel: MainViewModel by viewModels { ViewModelFactory(this) }
     private val animator by lazy {
         ObjectAnimator.ofFloat(binding.ladderRoutesView, ANIMATION_PROPERTY, 0.0f, 1.0f)
             .apply {

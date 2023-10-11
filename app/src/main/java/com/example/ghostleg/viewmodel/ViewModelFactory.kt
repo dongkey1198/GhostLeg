@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.ghostleg.data.datastore.DataStoreManager
 import com.example.ghostleg.data.datastore.LadderGameDataStore
 import com.example.ghostleg.data.repository.LadderGameRepositoryImpl
+import com.example.ghostleg.viewmodel.main.MainViewModel
 import com.example.ghostleg.viewmodel.setting.SettingViewModel
 
 class ViewModelFactory(
@@ -14,6 +15,13 @@ class ViewModelFactory(
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
+            modelClass.isAssignableFrom(MainViewModel::class.java) -> {
+                MainViewModel(
+                    LadderGameRepositoryImpl(
+                        LadderGameDataStore(DataStoreManager(context).getLadderGameDataStore())
+                    )
+                ) as T
+            }
             modelClass.isAssignableFrom(SettingViewModel::class.java) -> {
                 SettingViewModel(
                     LadderGameRepositoryImpl(
