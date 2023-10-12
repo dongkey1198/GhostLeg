@@ -3,7 +3,7 @@ package com.example.ghostleg.data.model
 import android.graphics.Color
 
 
-data class Ladder(
+data class Line(
     val startX: Float,
     val startY: Float,
     val endX: Float,

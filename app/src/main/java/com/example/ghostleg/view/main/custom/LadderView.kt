@@ -5,26 +5,26 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
-import com.example.ghostleg.data.model.Ladder
+import com.example.ghostleg.data.model.Line
 
 class LadderView(context: Context, attr: AttributeSet?) : View(context, attr) {
 
-    private val _verticalLadders: MutableList<Ladder> = mutableListOf()
-    private val _horizontalLadders: MutableList<Ladder> = mutableListOf()
+    private val _verticalLines: MutableList<Line> = mutableListOf()
+    private val _horizontalLines: MutableList<Line> = mutableListOf()
     private val paint = Paint()
 
-    fun updateVerticalLines(ladders: List<Ladder>) {
-        _verticalLadders.apply {
+    fun updateVerticalLines(lines: List<Line>) {
+        _verticalLines.apply {
             clear()
-            addAll(ladders)
+            addAll(lines)
         }
         invalidate()
     }
 
-    fun updateHorizontalLines(ladders: List<Ladder>) {
-        _horizontalLadders.apply {
+    fun updateHorizontalLines(lines: List<Line>) {
+        _horizontalLines.apply {
             clear()
-            addAll(ladders)
+            addAll(lines)
         }
         invalidate()
     }
@@ -38,7 +38,7 @@ class LadderView(context: Context, attr: AttributeSet?) : View(context, attr) {
     }
 
     private fun drawVerticalLines(canvas: Canvas) {
-        _verticalLadders.forEach { line ->
+        _verticalLines.forEach { line ->
             paint.apply {
                 color = line.color
                 strokeWidth = line.stroke
@@ -48,7 +48,7 @@ class LadderView(context: Context, attr: AttributeSet?) : View(context, attr) {
     }
 
     private fun drawHorizontalLines(canvas: Canvas) {
-        _horizontalLadders.forEach { line ->
+        _horizontalLines.forEach { line ->
             paint.apply {
                 color = line.color
                 strokeWidth = line.stroke

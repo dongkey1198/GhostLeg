@@ -2,7 +2,7 @@ package com.example.ghostleg.viewmodel.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ghostleg.data.model.Ladder
+import com.example.ghostleg.data.model.Line
 import com.example.ghostleg.data.model.LadderRoute
 import com.example.ghostleg.data.repository.LadderGameRepository
 import kotlinx.coroutines.Dispatchers
@@ -24,10 +24,10 @@ class MainViewModel(
     private val _gameResults = MutableStateFlow<List<String>>(emptyList())
     val gameResultLabelsFlow get() = _gameResults.asStateFlow()
 
-    private val _verticalLinesFlow = MutableStateFlow<List<Ladder>>(emptyList())
+    private val _verticalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val verticalLinesFlow get() = _verticalLinesFlow.asStateFlow()
 
-    private val _horizontalLinesFlow = MutableStateFlow<List<Ladder>>(emptyList())
+    private val _horizontalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val horizontalLinesFlow get() = _horizontalLinesFlow.asStateFlow()
 
     private val _ladderRoutesFlow = MutableStateFlow<List<LadderRoute>>(emptyList())
@@ -190,7 +190,7 @@ class MainViewModel(
         (0 until _playersFlow.value.size).map { index ->
             val startMatrix = _ladderMatrix.first()
             val endMatrix = _ladderMatrix.last()
-            Ladder(
+            Line(
                 startMatrix[index].first,
                 startMatrix[index].second,
                 endMatrix[index].first,
@@ -202,23 +202,23 @@ class MainViewModel(
     }
 
     private fun initHorizontalLines() {
-        val horizontalLadders = mutableListOf<Ladder>()
+        val horizontalLines = mutableListOf<Line>()
         (1 until _ladderPathMatrix.size - 1).forEach { y ->
             (0 until _ladderPathMatrix[y].size - 1).forEach { x ->
                 if (_ladderPathMatrix[y][x] == Direction.RIGHT_DOWN) {
                     val startMatrix = _ladderMatrix[y][x]
                     val endMatrix = _ladderMatrix[y][x + 1]
-                    val ladder = Ladder(
+                    val line = Line(
                         startMatrix.first,
                         startMatrix.second,
                         endMatrix.first,
                         endMatrix.second
                     )
-                    horizontalLadders.add(ladder)
+                    horizontalLines.add(line)
                 }
             }
         }
-        _horizontalLinesFlow.update { horizontalLadders }
+        _horizontalLinesFlow.update { horizontalLines }
     }
 
     private fun generateLadderRoutes() {
