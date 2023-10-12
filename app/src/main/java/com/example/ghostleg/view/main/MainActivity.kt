@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels { ViewModelFactory(this) }
     private val animator by lazy {
-        ObjectAnimator.ofFloat(binding.ladderRoutesView, ANIMATION_PROPERTY, 0.0f, 1.0f)
+        ObjectAnimator.ofFloat(binding.ladderPathView, ANIMATION_PROPERTY, 0.0f, 1.0f)
             .apply {
                 duration = GAME_PLAYING_DURATION
                 addListener(object : AnimatorListenerAdapter() {
@@ -105,12 +105,14 @@ class MainActivity : AppCompatActivity() {
             }
             // Horizontal Lines
             launch {
-                viewModel.horizontalLinesFlow.collect { binding.ladderView.updateHorizontalLines(it) }
+                viewModel.horizontalLinesFlow.collect {
+                    binding.ladderView.updateHorizontalLines(it)
+                }
             }
             // Ladder Routes
             launch {
                 viewModel.ladderRoutesFlow.collect { ladderRoutes ->
-                    with(binding.ladderRoutesView) {
+                    with(binding.ladderPathView) {
                         if (ladderRoutes.isNotEmpty()) {
                             initView(ladderRoutes)
                             animator.start()
@@ -153,6 +155,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        animator.end()
     }
 
     private fun createTextView(label: String): TextView {

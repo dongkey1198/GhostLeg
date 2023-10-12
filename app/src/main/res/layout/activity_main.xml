@@ -36,8 +36,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/layoutPlayerLabel" />
 
-    <com.example.ghostleg.view.main.custom.LadderRoutesView
-        android:id="@+id/ladderRoutesView"
+    <com.example.ghostleg.view.main.custom.LadderPathView
+        android:id="@+id/ladderPathView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="@id/ladderView"

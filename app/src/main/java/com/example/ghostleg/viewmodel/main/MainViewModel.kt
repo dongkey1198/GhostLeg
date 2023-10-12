@@ -18,11 +18,11 @@ class MainViewModel(
     private val ladderGameRepository: LadderGameRepository
 ) : ViewModel() {
 
-    private val _playerLabelsFlow = MutableStateFlow<List<String>>(emptyList())
-    val playerLabelsFlow get() = _playerLabelsFlow.asStateFlow()
+    private val _playersFlow = MutableStateFlow<List<String>>(emptyList())
+    val playerLabelsFlow get() = _playersFlow.asStateFlow()
 
-    private val _gameResultLabelsFlow = MutableStateFlow<List<String>>(emptyList())
-    val gameResultLabelsFlow get() = _gameResultLabelsFlow.asStateFlow()
+    private val _gameResults = MutableStateFlow<List<String>>(emptyList())
+    val gameResultLabelsFlow get() = _gameResults.asStateFlow()
 
     private val _verticalLinesFlow = MutableStateFlow<List<Line>>(emptyList())
     val verticalLinesFlow get() = _verticalLinesFlow.asStateFlow()
@@ -47,17 +47,16 @@ class MainViewModel(
 
     private val _ladderViewSizeFlow = MutableStateFlow<Pair<Float, Float>>(Pair(0f, 0f))
     private val _ladderMatrix = mutableListOf<List<Pair<Float, Float>>>()
-    private val _randomLineMatrix = mutableListOf<List<Int>>()
+    private val _ladderPathMatrix = mutableListOf<MutableList<Direction>>()
     private var _isPlaying = false
 
     init {
         viewModelScope.launch(Dispatchers.Default) {
-            combine(
-                ladderGameRepository.playerCount,
-                _ladderViewSizeFlow
-            ) { playerCount, ladderViewSize ->
+            combine(ladderGameRepository.playerCount, _ladderViewSizeFlow) { playerCount, ladderViewSize ->
                 Pair(playerCount, ladderViewSize)
-            }.collect { (playerCount, ladderViewSize) -> initGame(playerCount, ladderViewSize) }
+            }.collect { (playerCount, ladderViewSize) ->
+                initGame(playerCount, ladderViewSize)
+            }
         }
     }
 
@@ -68,7 +67,7 @@ class MainViewModel(
     fun startButtonClicked() {
         setIsPlaying(true)
         setStartButtonState(false)
-        generateRoutes()
+        generateLadderRoutes()
     }
 
     fun gameEnded() {
@@ -96,9 +95,9 @@ class MainViewModel(
 
     private fun initGame(playerCount: Int, ladderViewSize: Pair<Float, Float>) {
         initGamePlayers(playerCount)
-        initGameResult()
+        initGameResults()
         initLadderMatrix(ladderViewSize.first, ladderViewSize.second)
-        initRandomLineMatrix()
+        initLadderPathMatrix()
         initVerticalLines()
         initHorizontalLines()
         setLadderRoutes(emptyList())
@@ -107,8 +106,8 @@ class MainViewModel(
     }
 
     private fun resetGame() {
-        initGameResult()
-        initRandomLineMatrix()
+        initGameResults()
+        initLadderPathMatrix()
         initHorizontalLines()
         setLadderRoutes(emptyList())
         setStartButtonState(true)
@@ -117,25 +116,25 @@ class MainViewModel(
 
     private fun initGamePlayers(playerCount: Int) {
         (1..playerCount)
-            .map { index -> "$LABEL_PLAYER$index" }
-            .let { playerLabels -> _playerLabelsFlow.update { playerLabels } }
+            .map { number ->"$LABEL_PLAYER$number" }
+            .let { playerLabels -> _playersFlow.update { playerLabels } }
     }
 
-    private fun initGameResult() {
-        val resultIndex = (0 until _playerLabelsFlow.value.size).random()
-        (0 until _playerLabelsFlow.value.size).map { index ->
+    private fun initGameResults() {
+        val resultIndex = (0 until _playersFlow.value.size).random()
+        (0 until _playersFlow.value.size).map { index ->
             if (index == resultIndex) LABEL_WIN else LABEL_LOSE
-        }.let { gameResultLabels ->
-            _gameResultLabelsFlow.update { gameResultLabels }
+        }.let { results ->
+            _gameResults.update { results }
         }
     }
 
     private fun initLadderMatrix(width: Float, height: Float) {
         val lastPosition = HORIZONTAL_LINE_COUNT + 2
-        val sectionWidth = width / _playerLabelsFlow.value.size
+        val sectionWidth = width / _playersFlow.value.size
         val sectionHeight = height / HORIZONTAL_LINE_COUNT
         (0 until lastPosition).map { y ->
-            (0 until _playerLabelsFlow.value.size).map { x ->
+            (0 until _playersFlow.value.size).map { x ->
                 val xScale = (sectionWidth * (x + 1) + sectionWidth * x) / 2
                 val yScale = when {
                     // 출발 지점
@@ -153,25 +152,24 @@ class MainViewModel(
         }
     }
 
-    private fun initRandomLineMatrix() {
+    private fun initLadderPathMatrix() {
         val randomIndices = getRandomIndices()
-        val horizontalLineMatrix =
-            Array(HORIZONTAL_LINE_COUNT + 2) { IntArray(_playerLabelsFlow.value.size) }
-        (0 until _playerLabelsFlow.value.size - 1).forEach { x ->
+        val ladderPathMatrix = MutableList(HORIZONTAL_LINE_COUNT + 2) {
+            MutableList(_playersFlow.value.size) { Direction.DOWN }
+        }
+        (0 until _playersFlow.value.size - 1).forEach { x ->
             randomIndices[x].forEach { y ->
-                horizontalLineMatrix[y][x] = 1
-                horizontalLineMatrix[y][x + 1] = 2
+                ladderPathMatrix[y][x] = Direction.RIGHT_DOWN
+                ladderPathMatrix[y][x + 1] = Direction.LEFT_DOWN
             }
         }
-        horizontalLineMatrix.map { it.toList() }.let { randomLineMatrix ->
-            _randomLineMatrix.clear()
-            _randomLineMatrix.addAll(randomLineMatrix)
-        }
+        _ladderPathMatrix.clear()
+        _ladderPathMatrix.addAll(ladderPathMatrix)
     }
 
     private fun getRandomIndices(): List<List<Int>> {
         val randomIndices = mutableListOf<List<Int>>()
-        (0 until _playerLabelsFlow.value.size - 1).forEach { index ->
+        (0 until _playersFlow.value.size - 1).forEach { index ->
             val availableIndices = (1..HORIZONTAL_LINE_COUNT).toMutableList()
             if (index > 0) {
                 randomIndices[index - 1].forEach { value ->
@@ -189,7 +187,7 @@ class MainViewModel(
     }
 
     private fun initVerticalLines() {
-        (0 until _playerLabelsFlow.value.size).map { index ->
+        (0 until _playersFlow.value.size).map { index ->
             val startMatrix = _ladderMatrix.first()
             val endMatrix = _ladderMatrix.last()
             Line(
@@ -205,9 +203,9 @@ class MainViewModel(
 
     private fun initHorizontalLines() {
         val horizontalLines = mutableListOf<Line>()
-        (1 until _randomLineMatrix.size - 1).forEach { y ->
-            (0 until _randomLineMatrix[y].size - 1).forEach { x ->
-                if (_randomLineMatrix[y][x] == 1) {
+        (1 until _ladderPathMatrix.size - 1).forEach { y ->
+            (0 until _ladderPathMatrix[y].size - 1).forEach { x ->
+                if (_ladderPathMatrix[y][x] == Direction.RIGHT_DOWN) {
                     val startMatrix = _ladderMatrix[y][x]
                     val endMatrix = _ladderMatrix[y][x + 1]
                     val line = Line(
@@ -223,39 +221,35 @@ class MainViewModel(
         _horizontalLinesFlow.update { horizontalLines }
     }
 
-    private fun generateRoutes() {
-        (0 until _playerLabelsFlow.value.size).map { index ->
+    private fun generateLadderRoutes() {
+        (0 until _playersFlow.value.size).map { index ->
             var y = 0
             var x = index
-            val pathScales = mutableListOf<Pair<Float, Float>>()
-            pathScales.add(getRoute(y, x))
+            val paths = mutableListOf<Pair<Float, Float>>()
             do {
-                when (_randomLineMatrix[y][x]) {
-                    // 오른쪽 이동 + 한칸 아래 이동
-                    1 -> {
-                        pathScales.add(getRoute(y, ++x))
-                        pathScales.add(getRoute(++y, x))
+                when (_ladderPathMatrix[y][x]) {
+                    Direction.DOWN -> {
+                        paths.add(getPath(y++, x))
                     }
-                    // 왼쪽 이동 + 한칸 아래 이동
-                    2 -> {
-                        pathScales.add(getRoute(y, --x))
-                        pathScales.add(getRoute(++y, x))
+                    Direction.RIGHT_DOWN -> {
+                        paths.add(getPath(y, x++))
+                        paths.add(getPath(y++, x))
                     }
-                    // 한칸 아래 이동
-                    else -> {
-                        pathScales.add(getRoute(++y, x))
+                    Direction.LEFT_DOWN -> {
+                        paths.add(getPath(y, x--))
+                        paths.add(getPath(y++, x))
                     }
                 }
-            } while (y < HORIZONTAL_LINE_COUNT + 1)
-            pathScales
-        }.map { pathScale ->
-            LadderRoute(pathScales = pathScale)
-        }.let { ladderRoutes ->
-            setLadderRoutes(ladderRoutes)
+            } while (y < HORIZONTAL_LINE_COUNT + 2)
+            paths
+        }.map {
+            LadderRoute(pathScales = it)
+        }.let {
+            setLadderRoutes(it)
         }
     }
 
-    private fun getRoute(i: Int, j: Int): Pair<Float, Float> {
+    private fun getPath(i: Int, j: Int): Pair<Float, Float> {
         val scales = _ladderMatrix[i][j]
         return Pair(scales.first, scales.second)
     }
@@ -280,6 +274,12 @@ class MainViewModel(
 
     private fun setIsPlaying(isPlaying: Boolean = false) {
         _isPlaying = isPlaying
+    }
+
+    private enum class Direction {
+        DOWN,
+        RIGHT_DOWN,
+        LEFT_DOWN
     }
 
     companion object {
