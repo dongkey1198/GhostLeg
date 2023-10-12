@@ -123,8 +123,8 @@ class MainViewModel(
     }
 
     private fun initGameResults() {
-        val resultIndex = (0 until _playersFlow.value.size).random()
-        (0 until _playersFlow.value.size).map { index ->
+        val resultIndex = (0 until _currentPlayerCount).random()
+        (0 until _currentPlayerCount).map { index ->
             if (index == resultIndex) LABEL_WIN else LABEL_LOSE
         }.let { results ->
             _gameResults.update { results }
@@ -133,10 +133,10 @@ class MainViewModel(
 
     private fun initLadderMatrix(width: Float, height: Float) {
         val lastPosition = HORIZONTAL_LINE_COUNT + 2
-        val sectionWidth = width / _playersFlow.value.size
-        val sectionHeight = height / HORIZONTAL_LINE_COUNT
+        val sectionWidth = width / _currentPlayerCount / 2
+        val sectionHeight = height / HORIZONTAL_LINE_COUNT / 2
         (0 until lastPosition).map { y ->
-            (0 until _playersFlow.value.size).map { x ->
+            (0 until _currentPlayerCount).map { x ->
                 val xScale = (sectionWidth * (x + 1) + sectionWidth * x) / 2
                 val yScale = when {
                     // 출발 지점
@@ -178,11 +178,11 @@ class MainViewModel(
                     if (availableIndices.contains(value)) availableIndices.remove(value)
                 }
             }
-            val remainingTrueCount = when {
+            val remainingLineCount = when {
                 availableIndices.size >= MAXIMUM_COUNT -> (MINIMUM_COUNT..MAXIMUM_COUNT).random()
                 else -> (MINIMUM_COUNT..availableIndices.size).random()
             }
-            val indices = availableIndices.shuffled().take(remainingTrueCount)
+            val indices = availableIndices.shuffled().take(remainingLineCount)
             randomIndices.add(indices)
         }
         return randomIndices
