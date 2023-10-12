@@ -133,8 +133,8 @@ class MainViewModel(
 
     private fun initLadderMatrix(width: Float, height: Float) {
         val lastPosition = HORIZONTAL_LINE_COUNT + 2
-        val sectionWidth = width / _currentPlayerCount / 2
-        val sectionHeight = height / HORIZONTAL_LINE_COUNT / 2
+        val sectionWidth = width / _playersFlow.value.size
+        val sectionHeight = height / HORIZONTAL_LINE_COUNT
         (0 until lastPosition).map { y ->
             (0 until _currentPlayerCount).map { x ->
                 val xScale = (sectionWidth * (x + 1) + sectionWidth * x) / 2
