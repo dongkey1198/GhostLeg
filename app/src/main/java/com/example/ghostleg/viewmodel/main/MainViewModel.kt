@@ -48,6 +48,7 @@ class MainViewModel(
     private val _ladderViewSizeFlow = MutableStateFlow<Pair<Float, Float>>(Pair(0f, 0f))
     private val _ladderMatrix = mutableListOf<List<Pair<Float, Float>>>()
     private val _ladderPathMatrix = mutableListOf<MutableList<Direction>>()
+    private var _currentPlayerCount = 0
     private var _isPlaying = false
 
     init {
@@ -94,7 +95,8 @@ class MainViewModel(
     }
 
     private fun initGame(playerCount: Int, ladderViewSize: Pair<Float, Float>) {
-        initGamePlayers(playerCount)
+        _currentPlayerCount = playerCount
+        initGamePlayers()
         initGameResults()
         initLadderMatrix(ladderViewSize.first, ladderViewSize.second)
         initLadderPathMatrix()
@@ -114,8 +116,8 @@ class MainViewModel(
         setResultBlindState(true)
     }
 
-    private fun initGamePlayers(playerCount: Int) {
-        (1..playerCount)
+    private fun initGamePlayers() {
+        (1.._currentPlayerCount)
             .map { number ->"$LABEL_PLAYER$number" }
             .let { playerLabels -> _playersFlow.update { playerLabels } }
     }
@@ -155,9 +157,9 @@ class MainViewModel(
     private fun initLadderPathMatrix() {
         val randomIndices = getRandomIndices()
         val ladderPathMatrix = MutableList(HORIZONTAL_LINE_COUNT + 2) {
-            MutableList(_playersFlow.value.size) { Direction.DOWN }
+            MutableList(_currentPlayerCount) { Direction.DOWN }
         }
-        (0 until _playersFlow.value.size - 1).forEach { x ->
+        (0 until _currentPlayerCount - 1).forEach { x ->
             randomIndices[x].forEach { y ->
                 ladderPathMatrix[y][x] = Direction.RIGHT_DOWN
                 ladderPathMatrix[y][x + 1] = Direction.LEFT_DOWN
@@ -169,7 +171,7 @@ class MainViewModel(
 
     private fun getRandomIndices(): List<List<Int>> {
         val randomIndices = mutableListOf<List<Int>>()
-        (0 until _playersFlow.value.size - 1).forEach { index ->
+        (0 until _currentPlayerCount - 1).forEach { index ->
             val availableIndices = (1..HORIZONTAL_LINE_COUNT).toMutableList()
             if (index > 0) {
                 randomIndices[index - 1].forEach { value ->
@@ -187,7 +189,7 @@ class MainViewModel(
     }
 
     private fun initVerticalLines() {
-        (0 until _playersFlow.value.size).map { index ->
+        (0 until _currentPlayerCount).map { index ->
             val startMatrix = _ladderMatrix.first()
             val endMatrix = _ladderMatrix.last()
             Line(
@@ -222,7 +224,7 @@ class MainViewModel(
     }
 
     private fun generateLadderRoutes() {
-        (0 until _playersFlow.value.size).map { index ->
+        (0 until _currentPlayerCount).map { index ->
             var y = 0
             var x = index
             val paths = mutableListOf<Pair<Float, Float>>()
